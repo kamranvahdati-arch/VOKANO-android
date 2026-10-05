@@ -110,14 +110,24 @@ and preserve valid work in a checkpoint commit on the repository.
 - `scripts/test-calculation-foundation.sh` reproduces those tests without Android.
 - `.github/workflows/v103.yml` builds this development checkpoint with test signing
   and runs foundation assertions. Its output is not a production update APK.
+- Remote implementation checkpoint: `f21a8b0ddd8253088a4d0abf06d3d085d4b8e1ce`.
+  Tree `3aa6f59acd475bde60f1d197c482098c56b437be` exactly matches the original local
+  checkpoint `86affeeb8bb2f9f9337d7358b79e8c4fb48c2333`, preserved on local checkpoint
+  branches. Git push lacked credentials; the authenticated GitHub connector
+  preserved the identical tree. Current work branch tracks remote `codex/v10.3`.
+- CI run `37377551905`, job `111990588671`, on the implementation checkpoint:
+  completed SUCCESS. Foundation assertions and Android release/test APK builds
+  succeeded. Test-only artifact `11372472107` was produced. No production signing
+  and no emulator execution were performed in this new workflow.
 - No existing application source has been edited. No UI entry, database/schema,
   preferences, signing, backup format, navigation or version number changed.
 
 ## First incomplete work and remaining gates
 
-1. Check the new checkpoint CI build result. Preserve successful baseline tests;
-   do not repeat them absent a relevant code change.
-2. Retrieve and verify authoritative full legal sources and applicable amendments:
+1. Preserve successful baseline and foundation tests; do not repeat them absent
+   a relevant code change. Documentation-only evidence commits do not require
+   another build of the identical application source.
+2. FIRST INCOMPLETE GATE: Retrieve and verify authoritative full legal sources and applicable amendments:
    tariff 1398/12/28 (all effective articles); penal diyah/arsh/taghliz provisions;
    article 522 and rulings 850/812. Official legal verification remains blocked
    by retrieval failures/incomplete search coverage. Do not mark unofficial
