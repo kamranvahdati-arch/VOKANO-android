@@ -77,12 +77,18 @@ Legal Calculation Center to healthy 10.2; no general refactor or redesign.
 
 ## Legal evidence gate
 
-Official-source verification is unfinished. Search found unofficial reproductions
-of the tariff, ruling 850 and penal provisions, which are NOT a verified rule
-pack. Official parliament law URL `https://rc.majlis.ir/fa/law/show/845048`
-returned 502 through retrieval. Do not invent source verification or silently use
-commercial calculators. Rate 21,000,000,000 rials supplied by owner is a test
-example, not an independently verified official 1405 data record.
+Official-source verification is partly completed, not a released rule pack.
+On 2026-10-06 the full 34-article tariff was read at official Qavanin record
+`16814137751518820692`, its consolidation relationships inspected, and the
+Central Bar republication cross-checked. See `V10_3_LEGAL_SOURCE_REVIEW.md` for
+URLs, every article's computational relevance, unresolved interactions and
+independently derived (not executed) tariff fixture candidates. Do not repeat
+this extraction. The retrieved relationships page lists no affecting instrument;
+that observation is not a guarantee against every later legal change.
+Official verification of penal provisions and rulings 850/812 remains unfinished.
+Official parliament URL `https://rc.majlis.ir/fa/law/show/845048` previously
+returned 502. Do not silently substitute commercial calculators. The owner's
+21,000,000,000-rial example remains unverified annual reference data.
 
 ## Resume rule
 
@@ -127,11 +133,12 @@ and preserve valid work in a checkpoint commit on the repository.
 1. Preserve successful baseline and foundation tests; do not repeat them absent
    a relevant code change. Documentation-only evidence commits do not require
    another build of the identical application source.
-2. FIRST INCOMPLETE GATE: Retrieve and verify authoritative full legal sources and applicable amendments:
-   tariff 1398/12/28 (all effective articles); penal diyah/arsh/taghliz provisions;
-   article 522 and rulings 850/812. Official legal verification remains blocked
-   by retrieval failures/incomplete search coverage. Do not mark unofficial
-   reproductions as an officially verified rule pack.
+2. FIRST INCOMPLETE GATE: Finish authoritative legal-source verification:
+   penal diyah/arsh/taghliz provisions, article 522 and rulings 850/812; review
+   applicable changes. Tariff's full official text and article extraction are
+   now saved; resolve flagged rule interactions before enabling those branches.
+   Retrieval failures/incomplete coverage still affect the other sources.
+   Do not mark unofficial reproductions as an officially verified rule pack.
 3. Implement actual domain engines and verified rule/reference packs, including
    fee stages/services and exceptions, separate delay modes, prescribed injuries,
    taghliz eligibility and arsh assistance. Current code is infrastructure only.
@@ -146,3 +153,19 @@ and preserve valid work in a checkpoint commit on the repository.
 Migration state: no new migration created or applied; schema remains 15.
 Release state: 10.3 incomplete, no production 10.3 APK. All subsequent reports
 must distinguish baseline CI, technical foundation checks and release criteria.
+
+## Continuation checkpoint — 2026-10-06 UTC
+
+- Resumed remote/local `codex/v10.3` at
+  `3868c6f732f8099d0c860275e8c8144fe7d03aaa`, clean worktree before edits.
+- Maintenance had removed the old scratch clone; fresh clone restored the
+  existing branch/history, not a restart or reset of development.
+- Read the two supplied project/permanent execution-rule attachments.
+- Changed only this checkpoint and `docs/V10_3_LEGAL_SOURCE_REVIEW.md`.
+- No migration created/applied; schema 15; application 10.2 / code 15 unchanged.
+- No new build/test/emulator run: this increment changes documentation only;
+  previous successful baseline/foundation CI results above remain historical
+  evidence, not new passes. Legal goldens, new backup/restore and installed
+  10.2→10.3 upgrade remain unperformed. No new APK produced.
+- First next task is the remaining legal-source gate above, not a full audit or
+  rerun of successful tests for unchanged application code.
