@@ -19,7 +19,7 @@ public class V102StorageTest {
    root.getJSONObject("database").getJSONObject("tables").put("case_attachments",new org.json.JSONArray());
    ByteArrayOutputStream bytes=new ByteArrayOutputStream();FullBackup.write(c,root.toString(),bytes,"storage-test-password");
    try(FullBackup.Prepared restored=FullBackup.read(c,new ByteArrayInputStream(bytes.toByteArray()),"storage-test-password")){
-    JSONObject result=new JSONObject(restored.bundle);assertEquals("KLO-BUNDLE-1",result.getString("format"));assertEquals(15,result.getInt("schema"));assertFalse(result.has("media"));
+    JSONObject result=new JSONObject(restored.bundle);assertEquals("KLO-BUNDLE-1",result.getString("format"));assertEquals(OfficeDb.VERSION,result.getInt("schema"));assertFalse(result.has("media"));
    }
   }
  }

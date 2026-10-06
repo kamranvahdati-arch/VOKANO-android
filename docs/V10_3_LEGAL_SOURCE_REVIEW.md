@@ -188,3 +188,34 @@ accepted as substitutes. The prior tariff extraction remains preserved.
 Independent synthetic numerical checks: 1,000,000 x 150/100 = 1,500,000
 (total), 500,000 (damages); 2 x 4/3 = 8/3 exact, with explicit rounding.
 These exercise the reviewed arithmetic, NOT legal eligibility or real index data.
+
+## Continued evidence — 2026-10-06, tariff/storage increment
+
+The Gilan Bar page titled ruling 812 (despite its slug ending in 813) links an
+image of the signed Supreme Court ruling, number 812, dated 1400/04/01:
+https://guilanbar.ir/wp-content/uploads/2021/07/images_1398_09_812.jpeg.webp
+The actual image was opened and read. Its operative paragraph selects the
+date on the cheque and distinguishes its statutory regime from article 522.
+This is primary-document evidence hosted by the Bar, not merely a snippet or
+the page title. It does not certify all later exceptions or applicability to
+every document described as a cheque. Current-law/exception review remains open.
+
+Direct article-522 Qavanin record 502404499976366661 timed out (TreeText and
+PrintText). Parliament penal-code record 845048 returned an interstitial rather
+than statute text. Qavanin legacy record 198907 and Tehran University legal
+office page 2984 were also unavailable. These failures are not legal findings.
+
+The tariff arithmetic now loads a separate UTF-8 properties rule pack. It
+implements only the reviewed article-9 progressive branch, ordinary article-21
+stage shares, article-14 basic criminal stage redistribution, and the expressly
+listed ranges/services. Manual selections must remain within their interval;
+maximum-only provisions retain an unknown minimum. The pack labels its review
+as historical-text-reviewed; it does not infer commencement from adoption or
+claim current applicability has been exhaustively established.
+
+68 source-derived/boundary/validation assertions passed locally. The independent
+financial golden candidates above now execute against the engine. This is a
+limited tariff golden suite, not completion of all legal golden requirements.
+Special dispositions, final-by-value interaction, multiple counsel/charges,
+specialization, travel and the 14(d)/17 ambiguity are not implemented. No UI may
+silently route those special circumstances through the ordinary path.

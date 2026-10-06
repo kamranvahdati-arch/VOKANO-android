@@ -23,7 +23,7 @@ final class OfficeDb extends SQLiteOpenHelper {
     static final String LEGACY_NAME = "law_office_demo_v7.db";
     static final String ENCRYPTED_NAME = "law_office_encrypted_v9.db";
     static final String DATABASE_NAME = ENCRYPTED_NAME;
-    static final int VERSION = 15;
+    static final int VERSION = 16;
     private boolean validationOnly;
 
     OfficeDb(Context context) {
@@ -39,7 +39,7 @@ final class OfficeDb extends SQLiteOpenHelper {
     }
     static void validateBackup(Context context,String json,boolean requireAllTables)throws Exception {
         if(requireAllTables){JSONObject tables=new JSONObject(json).getJSONObject("tables");
-            for(String table:backupTables())if(!(tables.opt(table) instanceof JSONArray))throw new Exception("Incomplete backup table: "+table);
+            for(String table:legacyBackupTables())if(!(tables.opt(table) instanceof JSONArray))throw new Exception("Incomplete backup table: "+table);
         }
         byte[] key=new byte[32];new java.security.SecureRandom().nextBytes(key);
         try(OfficeDb isolated=new OfficeDb(context,key)){isolated.importJson(json);}
@@ -83,6 +83,7 @@ final class OfficeDb extends SQLiteOpenHelper {
         migrateV13(db);
         OfficeV101.migrate(db);
         migrateV15(db);
+        OfficeCalculations.migrate(db);
         if (BuildConfig.DEBUG && !validationOnly) seed(db);
     }
 
@@ -121,6 +122,7 @@ final class OfficeDb extends SQLiteOpenHelper {
         if (oldVersion < 13) migrateV13(db);
         if (oldVersion < 14) OfficeV101.migrate(db);
         if (oldVersion < 15) migrateV15(db);
+        if (oldVersion < 16) OfficeCalculations.migrate(db);
     }
 
     private void migrateV15(SQLiteDatabase db) {
@@ -994,7 +996,7 @@ final class OfficeDb extends SQLiteOpenHelper {
     String exportJson() throws Exception {
         SQLiteDatabase snapshot=getWritableDatabase();snapshot.beginTransaction();
         try {
-            JSONObject root = new JSONObject(); root.put("format", "KLO-2"); root.put("created", now());
+            JSONObject root = new JSONObject(); root.put("format", "KLO-2"); root.put("created", now()); root.put("schema",VERSION); root.put("calculation_format",1);
             JSONObject tables = new JSONObject();
             for (String table : backupTables()) tables.put(table, dump(table));
             root.put("tables", tables);snapshot.setTransactionSuccessful();return root.toString();
@@ -1005,6 +1007,7 @@ final class OfficeDb extends SQLiteOpenHelper {
         JSONObject root = new JSONObject(json);
         if (!"KLO-2".equals(root.optString("format"))) throw new Exception("نسخه پشتیبان معتبر نیست");
         JSONObject tables = root.getJSONObject("tables");
+        validateCalculationTables(root, tables);
         for(String table:new String[]{"clients","tasks","cases","ledger","worklogs","appointments","deadlines"})if(!(tables.opt(table) instanceof JSONArray))throw new Exception("فایل پشتیبان ناقص است: "+table);
         SQLiteDatabase db = getWritableDatabase();
         db.beginTransaction();
@@ -1013,13 +1016,31 @@ final class OfficeDb extends SQLiteOpenHelper {
             for (String table : backupTables())
                 if(tables.has(table))restore(db, table, tables.getJSONArray(table));
             backfillCaseClients(db);
+            OfficeCalculations.validateRestored(db);
             try(Cursor check=db.rawQuery("PRAGMA foreign_key_check",null)){if(check.moveToFirst())throw new Exception("ارتباط داده‌های پشتیبان نامعتبر است");}
             db.setTransactionSuccessful();
         } finally { db.endTransaction(); }
     }
 
-    private static String[] backupTables(){return new String[]{"financial_accounts","clients","cases","collaborators","case_clients","case_collaborators","representation_contracts","contract_clients","contract_collaborators","financial_contracts","installments","ledger","payment_checks","case_attachments","installment_payments","tasks","worklogs","appointments","deadlines","reminders","legal_taxonomy","legal_documents","legal_sync_state","person_roles","contract_parties","independent_ledger","collaboration_requests"};}
-    private static String[] deleteOrder(){return new String[]{"collaboration_requests","independent_ledger","contract_parties","person_roles","reminders","installment_payments","contract_collaborators","contract_clients","case_collaborators","case_clients","case_attachments","payment_checks","installments","ledger","financial_contracts","representation_contracts","appointments","deadlines","tasks","worklogs","collaborators","cases","clients","financial_accounts","legal_documents","legal_taxonomy","legal_sync_state"};}
+    private static String[] legacyBackupTables(){return new String[]{"financial_accounts","clients","cases","collaborators","case_clients","case_collaborators","representation_contracts","contract_clients","contract_collaborators","financial_contracts","installments","ledger","payment_checks","case_attachments","installment_payments","tasks","worklogs","appointments","deadlines","reminders","legal_taxonomy","legal_documents","legal_sync_state","person_roles","contract_parties","independent_ledger","collaboration_requests"};}
+    private static String[] deleteOrder(){return new String[]{"calculation_snapshots","calculation_references","collaboration_requests","independent_ledger","contract_parties","person_roles","reminders","installment_payments","contract_collaborators","contract_clients","case_collaborators","case_clients","case_attachments","payment_checks","installments","ledger","financial_contracts","representation_contracts","appointments","deadlines","tasks","worklogs","collaborators","cases","clients","financial_accounts","legal_documents","legal_taxonomy","legal_sync_state"};}
+
+    private static String[] backupTables(){
+        String[] legacy=legacyBackupTables();
+        String[] result=java.util.Arrays.copyOf(legacy,legacy.length+2);
+        result[legacy.length]=OfficeCalculations.REFERENCES;result[legacy.length+1]=OfficeCalculations.SNAPSHOTS;
+        return result;
+    }
+    private static void validateCalculationTables(JSONObject root,JSONObject tables)throws Exception{
+        if(root.has("schema")&&(root.getInt("schema")<1||root.getInt("schema")>VERSION))throw new Exception("Unsupported database backup schema");
+        boolean hasCalculations=root.has("calculation_format")||root.optInt("schema",0)>=16
+            ||tables.has(OfficeCalculations.REFERENCES)||tables.has(OfficeCalculations.SNAPSHOTS);
+        if(hasCalculations){
+            if(root.getInt("calculation_format")!=1)throw new Exception("Unsupported calculation backup format");
+            for(String table:new String[]{OfficeCalculations.REFERENCES,OfficeCalculations.SNAPSHOTS})
+                if(!(tables.opt(table) instanceof JSONArray))throw new Exception("Incomplete calculation backup: "+table);
+        }
+    }
 
     private JSONArray dump(String table) throws Exception {
         JSONArray array = new JSONArray(); Cursor c = getReadableDatabase().rawQuery("SELECT * FROM " + table, null);

@@ -197,3 +197,30 @@ new delay tests, Android release and release-test APK compilation passed.
 This workflow uses TEST signing; it is not a production 10.3 release, and
 has no emulator/upgrade/backup-restore execution. Documentation-only recording
 of this result does not require rebuilding identical application sources.
+
+## Active continuation — tariff and calculation storage, 2026-10-06
+
+Starting HEAD verified directly through GitHub: f8797581f46eb19886203d62af70c71c267958b5.
+Local clean branch was fast-forwarded to it without resetting any work.
+
+- New CalculationTariff engine and separate reviewed properties pack; 68 local
+  assertions passed, including the source-derived progressive tariff goldens.
+- Signed ruling 812 image read; see legal review. Remaining official statute and
+  later-exception review is still blocked by retrieval failures.
+- New CalculationJson lossless format and OfficeCalculations insert-only revision
+  repository. Two additive schema-16 tables, nullable case linkage; no rewrite of
+  existing migrations or existing office rows.
+- Backup export now records schema/calculation format. Valid old backups without
+  calculation tables remain accepted. New-format incomplete tables, invalid
+  payloads and broken revision/reference chains must fail transactionally.
+- New Android storage/backup tests and installed immutable 10.2-to-schema16
+  fixtures, plus API30/35 CI jobs. At checkpoint creation they are NOT yet run;
+  compile/emulator outcomes must be verified before any passing claim.
+- versionName/code still 10.2/15; schema candidate is 16. No release signing or
+  publication occurred. No calculation UI is connected yet.
+
+Next: inspect CI compilation and API30/35 storage/upgrade results; fix any real
+failure, then wire supported calculation forms/history/export. Remaining legal
+gates prevent declaring a complete 10.3 even if technical tests pass. Preserve
+old successful arithmetic tests; new CI also runs them because new domain/storage
+integration is now changing the candidate. Do not stop merely at this checkpoint.

@@ -18,6 +18,8 @@ jobs:
         run: bash scripts/test-calculation-foundation.sh
       - name: Delay arithmetic and index validation tests
         run: bash scripts/test-calculation-delay.sh
+      - name: Source-derived tariff goldens and boundary validation
+        run: bash scripts/test-calculation-tariff.sh
       - uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: '8.9'
@@ -29,4 +31,50 @@ jobs:
           path: |
             app/build/outputs/apk/release/*.apk
             app/build/outputs/apk/androidTest/release/*.apk
+          retention-days: 14
+  calculation-storage-upgrade:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        api: [30, 35]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.9'
+      - name: Build candidate with test signing
+        run: gradle assembleRelease assembleReleaseAndroidTest -PinstrumentedBuildType=release -PallowTestSigning
+      - name: Build immutable 10.2 baseline with shared fixture
+        run: |
+          git worktree add /tmp/vokano-baseline da5ec5fd4be843851b3f0b7229bff9e85627cb46
+          cp app/src/androidTest/java/ir/kamranvahdati/lawoffice/V103UpgradeTest.java /tmp/vokano-baseline/app/src/androidTest/java/ir/kamranvahdati/lawoffice/
+          cd /tmp/vokano-baseline
+          gradle assembleRelease assembleReleaseAndroidTest -PinstrumentedBuildType=release -PallowTestSigning
+      - name: Enable emulator acceleration
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+      - uses: reactivecircus/android-emulator-runner@v2
+        env:
+          VOKANO_BASELINE_APK: /tmp/vokano-baseline/app/build/outputs/apk/release/app-release.apk
+          VOKANO_BASELINE_TEST_APK: /tmp/vokano-baseline/app/build/outputs/apk/androidTest/release/app-release-androidTest.apk
+        with:
+          api-level: ${{ matrix.api }}
+          arch: x86_64
+          target: google_apis
+          disable-animations: true
+          script: python3 scripts/test-v103-upgrade.py
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: VOKANO-calculation-storage-upgrade-api-${{ matrix.api }}
+          path: app/build/v103-proof/
           retention-days: 14
