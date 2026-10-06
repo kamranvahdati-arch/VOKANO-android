@@ -158,3 +158,33 @@ Useful unfinished retrieval leads (NOT verified holdings):
 3. Then implement versioned reference packs and domain engines with independent
    goldens; persistence/UI/migration/export/upgrade work remains in the main
    checkpoint. No application source changed in this evidence-only increment.
+
+## Subsequent evidence and numerical implementation — 2026-10-06
+
+Official ruling 850, dated 1403/05/16, was retrieved in full from the
+Presidency legal publication service: https://dotic.ir/news/17037/
+The operative section (not merely the prosecutor's opinion) was reviewed.
+It specifies annual indexes published in monthly tables: principal multiplied
+by payment index divided by starting index yields debt including damages;
+compound interest is excluded. The retrieved text requires statutory eligibility.
+This verifies that historical holding, not an exhaustive current-law review.
+
+`CalculationDelayMath` now implements that numerical ratio, keeps principal,
+adjusted debt and damages separate, preserves exact rational output and applies
+explicit final rounding. It retains distinct ORDINARY_DEBT/CHEQUE modes but
+DOES NOT determine entitlement, select a legal starting date or certify a cheque.
+Both require an explicit reviewed start date and recorded basis from the future
+legal assessment layer. No official index data or release rule pack is seeded.
+Reference year/month, series, validity, confirmation, units and overflow are
+checked. Declining indexes are rejected pending a supported policy; the code
+does not invent negative damages or silently clamp them to zero.
+
+Remaining blockers: direct official article 522; ruling 812 and cheque scope;
+Penal Code/diyah/arsh; annual rates/indexes; later-change review including 877.
+The parliament URL returned an interstitial, not statute text. Dotic print/20814
+failed retrieval. Search snippets and unrelated book-five provisions were not
+accepted as substitutes. The prior tariff extraction remains preserved.
+
+Independent synthetic numerical checks: 1,000,000 x 150/100 = 1,500,000
+(total), 500,000 (damages); 2 x 4/3 = 8/3 exact, with explicit rounding.
+These exercise the reviewed arithmetic, NOT legal eligibility or real index data.

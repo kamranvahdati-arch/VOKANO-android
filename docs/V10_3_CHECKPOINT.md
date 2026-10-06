@@ -169,3 +169,24 @@ must distinguish baseline CI, technical foundation checks and release criteria.
   10.2→10.3 upgrade remain unperformed. No new APK produced.
 - First next task is the remaining legal-source gate above, not a full audit or
   rerun of successful tests for unchanged application code.
+
+## Numerical delay increment — 2026-10-06
+
+Starting HEAD: e965f8cbad3bfd1dd6556727456137d371a7c1f7.
+Added CalculationDelayMath, CalculationDelaySmokeTest, its test script and a CI
+step; updated source evidence above. No existing application behavior is wired
+to this class; no database, backup, migration, version or signing changes.
+
+Ruling 850 official text is now retrieved; other legal gates remain open as
+detailed in V10_3_LEGAL_SOURCE_REVIEW.md. Distinct modes preserve caller context;
+legal qualification and date selection are NOT implemented. Do not expose this
+helper as an automatic entitlement calculator before those gates succeed.
+
+Local new-suite result: 26 assertions PASS with Java 17, --release 8. The javac
+launcher was absent; java com.sun.tools.javac.Main successfully compiled the
+suite using the installed jdk.compiler module. No package installation succeeded.
+CI includes the new suite; its actual result must be checked, not presumed.
+No local Android build,
+emulator, migration, backup/restore or legal eligibility golden pass is claimed.
+Version remains 10.2 / 15; schema 15. Next: verify new CI result, finish remaining
+legal assessment sources/rules, then continue persistence and UI.
