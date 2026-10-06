@@ -45,7 +45,7 @@ final class CalculationTariff {
     }
 
     static final class Rules {
-        final String version, sourceUrl, sourceTitle, adoptionDate, reviewDate;
+        final String version, sourceUrl, sourceTitle, adoptionDate, reviewDate, serializedRules;
         final List<Band> bands;
         final Map<String, Range> ranges;
         final CalculationArithmetic.Fraction civilFirst, civilAppeal;
@@ -53,7 +53,10 @@ final class CalculationTariff {
 
         Rules(Reader reader) throws IOException {
             if (reader == null) throw invalid("بسته قواعد موجود نیست");
-            Properties p = new Properties(); p.load(reader);
+            StringBuilder raw=new StringBuilder();char[] buffer=new char[4096];int count;
+            while((count=reader.read(buffer))!=-1){raw.append(buffer,0,count);if(raw.length()>100000)throw invalid("بسته تعرفه بیش از حد بزرگ است");}
+            serializedRules=raw.toString();
+            Properties p = new Properties(); p.load(new java.io.StringReader(serializedRules));
             version = required(p, "version"); sourceUrl = required(p, "source.url");
             sourceTitle = required(p, "source.title");
             adoptionDate = CalculationReference.date(required(p, "adoption.date"));

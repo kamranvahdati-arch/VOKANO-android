@@ -50,7 +50,7 @@ adb('shell', 'am', 'force-stop', package)
 adb('install', '-r', str(candidate))
 adb('install', '-r', str(candidate_test))
 test('V103UpgradeTest', 'verify')
-for scoped in ['CalculationStorageTest', 'V102StorageTest', 'WorkspaceProviderTest', 'ThemeAndProfileAssetsTest', 'UiFlowSmokeTest', 'V102UiTest']:
+for scoped in ['CalculationStorageTest', 'CalculationUiTest', 'V102StorageTest', 'WorkspaceProviderTest', 'ThemeAndProfileAssetsTest', 'UiFlowSmokeTest', 'V102UiTest']:
     test(scoped)
 after = adb('shell', 'dumpsys', 'package', package)
 (out / 'after-package.txt').write_text(after)

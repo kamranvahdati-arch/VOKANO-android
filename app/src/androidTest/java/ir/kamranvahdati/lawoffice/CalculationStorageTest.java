@@ -47,6 +47,7 @@ public class CalculationStorageTest {
                 assertEquals("2000000000",repo.get(two.id).references.get(0).value);
                 assertEquals("دلیل تست",repo.get(two.id).overrides.get(0).reason);
                 assertTrue(repo.get(one.id).warnings.contains(CalculationSnapshot.ARSH_WARNING));
+                assertTrue(CalculationReport.text(repo.get(one.id)).contains(CalculationSnapshot.ARSH_WARNING));
                 assertEquals("نظر آزمایشی؛ قطعی نیست",repo.get(one.id).inputSnapshot.get("expertOpinion"));
                 boolean failed=false;try{repo.save(one);}catch(Exception expected){failed=true;}assertTrue(failed);
                 assertEquals(2,repo.list(caseId).size());
@@ -59,6 +60,7 @@ public class CalculationStorageTest {
                     db.importJson(new JSONObject(prepared.bundle).getJSONObject("database").toString());
                     assertEquals(CalculationJson.snapshot(one).toString(),CalculationJson.snapshot(repo.get(one.id)).toString());
                     assertEquals(CalculationJson.snapshot(two).toString(),CalculationJson.snapshot(repo.get(two.id)).toString());
+                    assertTrue(CalculationReport.text(repo.get(two.id)).contains(CalculationSnapshot.ARSH_WARNING));
                 }
                 int matching=0;for(CalculationReference r:repo.currentReferences())if(r.id.startsWith(prefix)){matching++;assertEquals(next.id,r.id);}
                 assertEquals(1,matching);

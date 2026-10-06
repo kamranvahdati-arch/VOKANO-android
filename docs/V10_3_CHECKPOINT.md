@@ -224,3 +224,24 @@ failure, then wire supported calculation forms/history/export. Remaining legal
 gates prevent declaring a complete 10.3 even if technical tests pass. Preserve
 old successful arithmetic tests; new CI also runs them because new domain/storage
 integration is now changing the candidate. Do not stop merely at this checkpoint.
+
+### Verified storage checkpoint and next UI increment
+
+Remote checkpoint `70a63145d934f0a542a94a9fc8362441a4e39536` has the identical tree
+`a8a8a8c4393cee4d44e8df56f5b01ee858f25fd2` as preserved local commit 58179e2.
+Git push lacked credentials; GitHub connector publication succeeded.
+CI run `37489343679`: all three jobs SUCCESS. The pure-Java foundation/delay/
+tariff suites and Android release/test compilation passed. Both API30 and API35
+installed immutable schema-15 baseline, seeded office data, installed candidate
+without uninstall/clear, and verified schema-16 preservation. The tests then
+passed calculation encrypted backup round-trip, malformed/incomplete restore
+rollback, legacy backup acceptance, and scoped 10.2 regression. This used TEST
+signing and development versionName 10.2, NOT a production 10.3 release.
+
+The next increment adds the center/case entry, agreed/tariff forms, immutable
+save/history/revision, and a single report text for display/PDF/share. Historical
+tariff pack content is captured in the input snapshot. Other domain cards are
+explicitly unavailable until their legal gate is complete; no automatic legal
+eligibility claim is exposed. A new light/dark UI save/revision test is added.
+Its new build/UI results are pending at this checkpoint; do not substitute the
+preceding storage-run success for this changed candidate.
