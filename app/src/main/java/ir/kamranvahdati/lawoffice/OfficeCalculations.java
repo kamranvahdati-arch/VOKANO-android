@@ -90,6 +90,13 @@ final class OfficeCalculations {
         }
         return result;
     }
+    List<CalculationReference> referenceHistory() throws Exception {
+        List<CalculationReference> result = new ArrayList<>();
+        try (Cursor c = office.getReadableDatabase().rawQuery("SELECT payload FROM calculation_references ORDER BY created_at DESC,id",null)) {
+            while (c.moveToNext()) result.add(CalculationJson.reference(new JSONObject(c.getString(0))));
+        }
+        return result;
+    }
     private static CalculationReference reference(SQLiteDatabase db,String id) throws Exception {
         try (Cursor c = db.rawQuery("SELECT payload FROM calculation_references WHERE id=?",new String[]{id})) {
             return c.moveToFirst() ? CalculationJson.reference(new JSONObject(c.getString(0))) : null;

@@ -245,3 +245,28 @@ explicitly unavailable until their legal gate is complete; no automatic legal
 eligibility claim is exposed. A new light/dark UI save/revision test is added.
 Its new build/UI results are pending at this checkpoint; do not substitute the
 preceding storage-run success for this changed candidate.
+
+## Reference-entry continuation — 2026-10-07
+
+Verified remote HEAD cb43d9d291b76effe752e498495a68ba20f43f1b; local 3959284
+has identical tree fa8b6bad48b463d346dca8a3250b253cc4c14d6f and is preserved
+on checkpoint/local-3959284. Continued on the remote branch without reset.
+CI run 37490633618 completed SUCCESS in all three jobs: calculation foundation,
+API30 and API35 storage/installed-upgrade/regression/UI tests. Thus the fee UI
+increment is now verified, including light/dark save/reopen/revise behavior.
+This remains TEST signing, not a production release.
+
+Added manual annual-rate/monthly-index entry and full reference-history screens.
+Unconfirmed input stays NEEDS_REVIEW and cannot be selected for calculation.
+Confirmation creates a new USER_ENTERED version, never OFFICIAL_VERIFIED.
+Source details, explicit series, period, unit and change reason are retained;
+stale historical edits are rejected. All old versions and calculation snapshots
+remain intact. New UI checks cover Persian numeric input, draft rejection,
+confirmation lineage, wrong-year rejection, stale editing and invalid months.
+No schema/version/signing change. New candidate Android CI is pending; the prior
+UI run is not evidence for this changed candidate.
+
+Primary-source retrieval remains blocked: Parliament Penal Code URL timed out;
+Qavanin record 198907 and Dotic 20814 were inaccessible on 2026-10-07.
+No unverified annual rate or legal rule has been seeded. Next: verify this
+candidate's CI; complete the remaining official-source/legal-domain gates.

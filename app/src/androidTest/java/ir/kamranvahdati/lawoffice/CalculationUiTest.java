@@ -15,6 +15,52 @@ import java.util.UUID;
 
 @RunWith(AndroidJUnit4.class)
 public class CalculationUiTest {
+    @Test public void referenceEntryRequiresReviewAndPreservesVersions()throws Exception{
+        Instrumentation ins=InstrumentationRegistry.getInstrumentation();Context c=ins.getTargetContext();
+        MainActivity a=(MainActivity)ins.startActivitySync(new Intent(c,MainActivity.class).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK|Intent.FLAG_ACTIVITY_CLEAR_TASK));ins.waitForIdleSync();
+        final String[] original={null};
+        try{
+            ins.runOnMainSync(()->{try{
+                original[0]=a.db.exportJson();OfficeCalculations repo=new OfficeCalculations(a.db);
+                int before=repo.referenceHistory().size();
+                String series="synthetic-rate-"+UUID.randomUUID();
+                CalculationReferenceUi ui=new CalculationReferenceUi(a,()->{});
+                ui.edit(CalculationReference.Kind.ANNUAL_DIYAH,null);
+                input(a.page,"شناسه سری؛ شامل نوع و سال پایه").setText(series);
+                input(a.page,"سال مبنا").setText("۱۴۰۴");input(a.page,"نرخ کامل عادی به ریال").setText("۱٬۰۰۰");
+                fillReferenceSource(a,"1404/01/01","1404/12/29");input(a.page,"توضیح مبنا").setText("داده مصنوعی آزمون؛ نرخ رسمی نیست");
+                click(a.page,"ثبت نسخه مبنا");
+                CalculationReference draft=repo.referenceHistory().get(0);
+                assertEquals(before+1,repo.referenceHistory().size());assertEquals(CalculationReference.Status.NEEDS_REVIEW,draft.status);
+                try{draft.requireUsable("1404/05/01",1404,0,series);fail("unreviewed reference accepted");}catch(IllegalArgumentException expected){}
+                click(a.page,"اصلاح / تأیید در نسخه جدید");
+                assertFalse(input(a.page,"سال مبنا").isEnabled());assertFalse(input(a.page,"شناسه سری؛ شامل نوع و سال پایه").isEnabled());
+                input(a.page,"علت ایجاد نسخه جدید").setText("بررسی داده مصنوعی");
+                ((CheckBox)findText(a.page,"مقدار، واحد، سال، سری و منبع را بررسی و برای استفاده تأیید می‌کنم")).setChecked(true);
+                click(a.page,"ثبت نسخه مبنا");
+                CalculationReference confirmed=repo.referenceHistory().get(0);
+                assertEquals(draft.id,confirmed.previousVersionId);assertEquals(CalculationReference.Status.USER_ENTERED,confirmed.status);
+                assertTrue(confirmed.manuallyEntered);assertTrue(confirmed.userConfirmed);
+                assertEquals(confirmed.id,CalculationReference.select(repo.currentReferences(),CalculationReference.Kind.ANNUAL_DIYAH,series,1404,0,"1404/05/01").id);
+                try{CalculationReference.select(repo.currentReferences(),CalculationReference.Kind.ANNUAL_DIYAH,series,1405,0,"1405/05/01");fail("wrong year fallback");}catch(IllegalArgumentException expected){}
+                ui.edit(CalculationReference.Kind.ANNUAL_DIYAH,draft);input(a.page,"علت ایجاد نسخه جدید").setText("stale revision");click(a.page,"ثبت نسخه مبنا");
+                assertEquals(before+2,repo.referenceHistory().size());
+                assertEquals("1000",repo.referenceHistory().get(1).value);assertFalse(repo.referenceHistory().get(1).userConfirmed);
+                ui.edit(CalculationReference.Kind.ECONOMIC_INDEX,null);
+                input(a.page,"شناسه سری؛ شامل نوع و سال پایه").setText("synthetic-annual-monthly-base1400");
+                input(a.page,"سال مبنا").setText("۱۴۰۴");input(a.page,"ماه مبنا؛ ۱ تا ۱۲").setText("۱۳");
+                input(a.page,"مقدار شاخص؛ عدد مثبت").setText("۱۲۳٫۴۵");fillReferenceSource(a,"1404/01/01","1404/12/29");input(a.page,"توضیح مبنا").setText("synthetic index");
+                click(a.page,"ثبت نسخه مبنا");assertEquals(before+2,repo.referenceHistory().size());
+                input(a.page,"ماه مبنا؛ ۱ تا ۱۲").setText("۲");click(a.page,"ثبت نسخه مبنا");
+                CalculationReference index=repo.referenceHistory().get(0);assertEquals(before+3,repo.referenceHistory().size());assertEquals(2,index.month);assertEquals("123.45",index.value);
+                ui.list(true);assertNotNull(findText(a.page,"نمایش نسخه‌های جاری"));
+            }catch(Exception e){throw new AssertionError(e);}});ins.waitForIdleSync();
+        }finally{ins.runOnMainSync(()->{try{if(original[0]!=null)a.db.importJson(original[0]);}catch(Exception e){throw new AssertionError(e);}finally{a.finish();}});ins.waitForIdleSync();}
+    }
+    private static void fillReferenceSource(MainActivity a,String start,String end){
+        input(a.page,"شروع اعتبار").setText(start);input(a.page,"پایان اعتبار").setText(end);
+        input(a.page,"عنوان منبع").setText("Synthetic UI fixture");input(a.page,"نوع منبع یا سند").setText("test fixture");input(a.page,"تاریخ منبع").setText("1404/01/01");
+    }
     @Test public void agreedFeeSavesReopensAndRevisesWithoutChangingCase()throws Exception{
         Instrumentation ins=InstrumentationRegistry.getInstrumentation();Context c=ins.getTargetContext();
         for(String theme:new String[]{AppTheme.LIGHT,AppTheme.DARK}){
