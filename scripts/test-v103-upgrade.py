@@ -47,7 +47,7 @@ adb('install', str(baseline_test))
 # for an already queued boot receiver. This is fixture isolation, not a change
 # to the immutable baseline APK or an attempted recovery of a damaged database.
 receiver = package + '/.ReminderReceiver'
-adb('shell', 'pm', 'disable-user', '--user', '0', receiver)
+adb('shell', 'pm', 'disable', '--user', '0', receiver)
 test('V103UpgradeTest', 'seed')
 adb('shell', 'am', 'force-stop', package)
 test('V103UpgradeTest', 'baseline-reopen')

@@ -37,3 +37,8 @@ repair an already damaged/mismatched key/database pair.
 
 These changes require fresh API 30 and API 35 CI evidence. The failed run remains
 recorded; a green new run does not retrospectively prove its exact root cause.
+
+Run 37661104002 compiled successfully, but fixture setup failed on both APIs:
+`pm disable-user` is a package-level state, rejected for a component. Corrected
+to component-level `pm disable`. No instrumentation or migration ran in that
+attempt; this is not evidence of another database failure.
