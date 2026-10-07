@@ -63,6 +63,7 @@ jobs:
         run: |
           git worktree add /tmp/vokano-baseline da5ec5fd4be843851b3f0b7229bff9e85627cb46
           cp app/src/androidTest/java/ir/kamranvahdati/lawoffice/V103UpgradeTest.java /tmp/vokano-baseline/app/src/androidTest/java/ir/kamranvahdati/lawoffice/
+          cp app/src/androidTest/java/ir/kamranvahdati/lawoffice/OfficeTestRunner.java /tmp/vokano-baseline/app/src/androidTest/java/ir/kamranvahdati/lawoffice/
           cd /tmp/vokano-baseline
           gradle assembleRelease assembleReleaseAndroidTest -PinstrumentedBuildType=release -PallowTestSigning
       - name: Enable emulator acceleration

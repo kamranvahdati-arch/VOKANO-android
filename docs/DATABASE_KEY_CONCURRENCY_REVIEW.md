@@ -26,14 +26,15 @@ repair an already damaged/mismatched key/database pair.
 - A test uses isolated preference names and nonexistent isolated database paths
   for three rounds of sixteen simultaneous key readers. It checks one shared
   secret, persisted reread, and unchanged live key without logging key material.
-- The installed-upgrade harness disables ReminderReceiver before starting the
-  baseline instrumentation. Runner.onStart alone cannot cancel work already
-  dispatched on the main thread. The immutable baseline application is not edited.
+- The shared test runner disables ReminderReceiver and initializes the fixture
+  key in onCreate on the main thread, before instrumentation tests start.
+  Runner.onStart alone cannot cancel work already dispatched on the main thread.
+  Only test APK sources are shared; the immutable baseline application is not edited.
 - A separate force-stop/restart baseline-reopen phase checks schema 15 and all
   saved rows, settings and attachment hash BEFORE candidate installation. A broken
   fixture now fails at its own boundary instead of being labelled migration loss.
 - The original same-package non-clearing upgrade and all existing suites remain.
-  Receiver state is restored to manifest default after successful suites.
+  The runner restores the receiver's previous state after each suite.
 
 These changes require fresh API 30 and API 35 CI evidence. The failed run remains
 recorded; a green new run does not retrospectively prove its exact root cause.
@@ -42,3 +43,11 @@ Run 37661104002 compiled successfully, but fixture setup failed on both APIs:
 `pm disable-user` is a package-level state, rejected for a component. Corrected
 to component-level `pm disable`. No instrumentation or migration ran in that
 attempt; this is not evidence of another database failure.
+
+Run 37661807249 also rejected shell component mutation (state 2). Removed this
+approach entirely. Test-runner onCreate now owns fixture preparation using the
+app's existing component permission, with no adb-root escalation. Both rejected
+runs stopped before instrumentation. The baseline application source remains
+unchanged; its test runner is shared explicitly in the workflow alongside the
+upgrade fixture. This deliberately serializes baseline fixture creation, while
+the separate candidate concurrency regression still tests simultaneous readers.
