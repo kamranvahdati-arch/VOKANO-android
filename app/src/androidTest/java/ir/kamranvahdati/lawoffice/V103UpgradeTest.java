@@ -19,7 +19,7 @@ import java.util.Iterator;
 public class V103UpgradeTest {
     @Test public void installedSchema15To16PreservesOffice()throws Exception{
         String phase=InstrumentationRegistry.getArguments().getString("upgrade_phase","");
-        Assume.assumeTrue("seed".equals(phase)||"verify".equals(phase));
+        Assume.assumeTrue("seed".equals(phase)||"baseline-reopen".equals(phase)||"verify".equals(phase));
         Context c=InstrumentationRegistry.getInstrumentation().getTargetContext();
         File expected=new File(c.getFilesDir(),"v103-upgrade-before.json");
         try(OfficeDb db=new OfficeDb(c)){
@@ -36,7 +36,8 @@ public class V103UpgradeTest {
                 before.put("settings",new JSONObject(c.getSharedPreferences("office_profile",0).getAll()));
                 try(FileOutputStream out=new FileOutputStream(expected)){out.write(before.toString().getBytes(StandardCharsets.UTF_8));}
             }else{
-                assertEquals(16,db.getReadableDatabase().getVersion());assertTrue(expected.isFile());
+                boolean baseline="baseline-reopen".equals(phase);
+                assertEquals(baseline?15:16,db.getReadableDatabase().getVersion());assertTrue(expected.isFile());
                 String saved;try(InputStream in=new FileInputStream(expected);ByteArrayOutputStream out=new ByteArrayOutputStream()){
                     byte[] buffer=new byte[8192];int n;while((n=in.read(buffer))!=-1)out.write(buffer,0,n);saved=out.toString("UTF-8");
                 }
@@ -47,8 +48,11 @@ public class V103UpgradeTest {
                 }
                 assertEquals(before.getString("attachment"),hash(c,Uri.parse(newTables.getJSONArray("case_attachments").getJSONObject(0).getString("content_uri"))));
                 assertEquals(before.getJSONObject("settings").toString(),new JSONObject(c.getSharedPreferences("office_profile",0).getAll()).toString());
-                assertEquals(0,newTables.getJSONArray("calculation_snapshots").length());
-                assertEquals(0,newTables.getJSONArray("calculation_references").length());assertEquals(0,db.countDemoRows());
+                if(!baseline){
+                    assertEquals(0,newTables.getJSONArray("calculation_snapshots").length());
+                    assertEquals(0,newTables.getJSONArray("calculation_references").length());
+                }
+                assertEquals(0,db.countDemoRows());
             }
         }
     }

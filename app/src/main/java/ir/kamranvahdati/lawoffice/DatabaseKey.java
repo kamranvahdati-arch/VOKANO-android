@@ -17,7 +17,10 @@ final class DatabaseKey {
     private static final String ALIAS="law_office_database_wrap_v1";
     private static final String PREF="database_secret";
 
-    static byte[] read(Context context) {
+    // All application components use the default process. Serialize the entire
+    // read/create/persist transaction: a second first-run caller must never
+    // replace the secret returned to the first caller. Existing keys are reused.
+    static synchronized byte[] read(Context context) {
         try {
             SharedPreferences prefs=context.getSharedPreferences(PREF,Context.MODE_PRIVATE);
             String wrapped=prefs.getString("wrapped_key",null);

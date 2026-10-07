@@ -43,15 +43,23 @@ assert baseline != candidate
 
 adb('install', str(baseline))
 adb('install', str(baseline_test))
+# Disable before the instrumentation process starts; runner.onStart is too late
+# for an already queued boot receiver. This is fixture isolation, not a change
+# to the immutable baseline APK or an attempted recovery of a damaged database.
+receiver = package + '/.ReminderReceiver'
+adb('shell', 'pm', 'disable-user', '--user', '0', receiver)
 test('V103UpgradeTest', 'seed')
+adb('shell', 'am', 'force-stop', package)
+test('V103UpgradeTest', 'baseline-reopen')
 before = adb('shell', 'dumpsys', 'package', package)
 (out / 'before-package.txt').write_text(before)
 adb('shell', 'am', 'force-stop', package)
 adb('install', '-r', str(candidate))
 adb('install', '-r', str(candidate_test))
 test('V103UpgradeTest', 'verify')
-for scoped in ['CalculationStorageTest', 'CalculationUiTest', 'V102StorageTest', 'WorkspaceProviderTest', 'ThemeAndProfileAssetsTest', 'UiFlowSmokeTest', 'V102UiTest']:
+for scoped in ['DatabaseKeyConcurrencyTest', 'CalculationStorageTest', 'CalculationUiTest', 'V102StorageTest', 'WorkspaceProviderTest', 'ThemeAndProfileAssetsTest', 'UiFlowSmokeTest', 'V102UiTest']:
     test(scoped)
+adb('shell', 'pm', 'default-state', '--user', '0', receiver)
 after = adb('shell', 'dumpsys', 'package', package)
 (out / 'after-package.txt').write_text(after)
 assert 'versionCode=' in after

@@ -1,0 +1,39 @@
+# First-run database key concurrency review — 2026-10-07
+
+## Evidence and limits
+
+Run 37617768784, revision 9b8757c: arithmetic/build succeeded and API 30
+installed-upgrade/UI/preview checks passed. API 35 seeded the immutable 10.2
+baseline successfully, but the candidate could not reopen its encrypted database
+(SQLCipher code 26 / page-one HMAC failure). Both APK signing identities matched.
+The baseline log records database opens on instrumentation thread 2304 and main
+thread 2270 within 45 ms. The log does not establish either caller's Java stack
+or prove that this specific failure was caused by different keys.
+
+Code inspection found a real first-creation race in the unchanged baseline
+DatabaseKey.read: two callers can both observe an absent wrapped key, generate
+different secrets, and overwrite the persisted secret. The candidate serializes
+the entire operation within the application's single process. No manifest
+component currently declares a separate process. Future multi-process use needs
+cross-process locking, not just this monitor.
+
+No key rotation, database deletion, data clearing, encryption-format change,
+or silent recovery is introduced. This prevents a first-run race; it cannot
+repair an already damaged/mismatched key/database pair.
+
+## Verification changes
+
+- A test uses isolated preference names and nonexistent isolated database paths
+  for three rounds of sixteen simultaneous key readers. It checks one shared
+  secret, persisted reread, and unchanged live key without logging key material.
+- The installed-upgrade harness disables ReminderReceiver before starting the
+  baseline instrumentation. Runner.onStart alone cannot cancel work already
+  dispatched on the main thread. The immutable baseline application is not edited.
+- A separate force-stop/restart baseline-reopen phase checks schema 15 and all
+  saved rows, settings and attachment hash BEFORE candidate installation. A broken
+  fixture now fails at its own boundary instead of being labelled migration loss.
+- The original same-package non-clearing upgrade and all existing suites remain.
+  Receiver state is restored to manifest default after successful suites.
+
+These changes require fresh API 30 and API 35 CI evidence. The failed run remains
+recorded; a green new run does not retrospectively prove its exact root cause.
