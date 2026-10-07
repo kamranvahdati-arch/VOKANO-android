@@ -219,3 +219,29 @@ limited tariff golden suite, not completion of all legal golden requirements.
 Special dispositions, final-by-value interaction, multiple counsel/charges,
 specialization, travel and the 14(d)/17 ambiguity are not implemented. No UI may
 silently route those special circumstances through the ordinary path.
+
+## Recovered primary Penal Code text — 2026-10-07
+
+ILO NATLEX record 103202 identifies the Majlis as source. Its 94-page Persian
+PDF preserves the Majlis print-version URL 845048 and print date 2016-12-18:
+https://natlex.ilo.org/dyn/natlex2/natlex2/files/download/103202/penal%20code.pdf
+This recovers primary historical text, NOT current consolidated status.
+
+Reviewed printed pages 63, 67–68, 73–76 (PDF indices 62, 66–67, 72–75):
+- 449: judicial assessment of arsh with expert input; no software assessment.
+- 490: payment-time valuation, except an agreed fixed amount.
+- 538–548: multiple-injury combination depends on causation, injury identity,
+  location and progression; no unconditional sum. Article 548 caps one injury's
+  arsh by its prescribed counterpart.
+- 549: annual announcement is separate reference data.
+- 555–557: one-third death enhancement has act/death temporal or sanctuary
+  conditions; sacred-month boundaries use legal sunset. Injury/benefit losses
+  do not receive this enhancement; article 556 contains fetal-life exceptions.
+- 550–552, 560–562: sex-related rules and compensation-fund distinctions need
+  separate treatment; do not silently halve every output or conflate fund
+  compensation with offender liability.
+
+No new automatic rule is enabled by this review. Remaining: amendments/current
+status, annual official circular, injury-specific schedule, exception rulings.
+WIPO IR024 identifies a Persian civil-procedure PDF, but its download returned
+403; article 522 has still not been directly reviewed from that document.

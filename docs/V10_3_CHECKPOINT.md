@@ -270,3 +270,30 @@ Primary-source retrieval remains blocked: Parliament Penal Code URL timed out;
 Qavanin record 198907 and Dotic 20814 were inaccessible on 2026-10-07.
 No unverified annual rate or legal rule has been seeded. Next: verify this
 candidate's CI; complete the remaining official-source/legal-domain gates.
+
+### Verified reference UI and remaining release gate
+
+Code checkpoint ace7cd0ea7bd7d15a715b09abdcb53289b121aa9 matches preserved local
+f17cd6749af9b24be48f5d58a9594ef3102d1a5f (tree
+8fd92931d33ecdfa6f3178adec82e0c98bdc7976). CI 37582756000 completed SUCCESS:
+foundation 112665951073, API30 112665951230, API35 112665951243.
+API35 logs explicitly include CalculationUiTest OK (2 tests), including manual
+reference draft/confirmation/history validation. Both matrix jobs passed the
+installed upgrade, storage, backup and scoped regression suites. No production
+signing/version bump/release is claimed. Final changes here are documentation
+only; these passing application sources do not need an identical rebuild.
+
+Recovered historical Majlis Penal Code print text through ILO NATLEX 103202;
+reviewed arsh, valuation, combination and enhancement provisions. Evidence and
+limits are recorded in V10_3_LEGAL_SOURCE_REVIEW.md. The original image attachment
+now exists locally; its earlier missing-path error no longer blocks this work.
+
+Remaining external legal-evidence gate: current consolidated/amendment review,
+official annual diyah circular and annual-index monthly table, article 522 and
+cheque exception review (including 877). WIPO IR024 PDF retrieval returned 403;
+Majlis print and Qavanin article-522 sources returned interstitials. Search
+snippets and commercial calculators are not accepted substitutes. Do not enable
+unverified automatic rules to mark the version complete. The first next task is
+to acquire/verify that source pack, preserving the recovered primary historical
+text. Then complete delay eligibility/UI, diyah/arsh engines/UI and outstanding
+special tariff pathways, source-derived goldens and final production gates.
