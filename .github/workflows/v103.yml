@@ -20,17 +20,25 @@ jobs:
         run: bash scripts/test-calculation-delay.sh
       - name: Source-derived tariff goldens and boundary validation
         run: bash scripts/test-calculation-tariff.sh
+      - name: Assessed body compensation conversions and reference boundaries
+        run: bash scripts/test-calculation-body.sh
       - uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: '8.9'
       - name: Compile checkpoint with unchanged release identity configuration
-        run: gradle assembleRelease assembleReleaseAndroidTest -PinstrumentedBuildType=release -PallowTestSigning
+        run: gradle assembleRelease assembleReleaseAndroidTest assemblePreview -PinstrumentedBuildType=release -PallowTestSigning
       - uses: actions/upload-artifact@v4
         with:
           name: VOKANO-calculation-checkpoint-TEST-ONLY
           path: |
             app/build/outputs/apk/release/*.apk
             app/build/outputs/apk/androidTest/release/*.apk
+          retention-days: 14
+      - uses: actions/upload-artifact@v4
+        with:
+          name: VOKANO-calculation-preview-SEPARATE-APP
+          path: app/build/outputs/apk/preview/*.apk
+          if-no-files-found: error
           retention-days: 14
   calculation-storage-upgrade:
     runs-on: ubuntu-latest
@@ -50,7 +58,7 @@ jobs:
         with:
           gradle-version: '8.9'
       - name: Build candidate with test signing
-        run: gradle assembleRelease assembleReleaseAndroidTest -PinstrumentedBuildType=release -PallowTestSigning
+        run: gradle assembleRelease assembleReleaseAndroidTest assemblePreview -PinstrumentedBuildType=release -PallowTestSigning
       - name: Build immutable 10.2 baseline with shared fixture
         run: |
           git worktree add /tmp/vokano-baseline da5ec5fd4be843851b3f0b7229bff9e85627cb46

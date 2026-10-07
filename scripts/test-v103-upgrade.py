@@ -55,6 +55,18 @@ for scoped in ['CalculationStorageTest', 'CalculationUiTest', 'V102StorageTest',
 after = adb('shell', 'dumpsys', 'package', package)
 (out / 'after-package.txt').write_text(after)
 assert 'versionCode=' in after
+
+# Separate preview can coexist with the data-bearing application. Never ask the
+# owner to uninstall their production app to install a test-signed package.
+preview = pathlib.Path('app/build/outputs/apk/preview/app-preview.apk')
+preview_package = package + '.preview'
+adb('install', str(preview))
+launch = adb('shell', 'am', 'start', '-W', '-n', preview_package + '/' + package + '.MainActivity')
+assert 'Status: ok' in launch and 'Error' not in launch, launch
+assert adb('shell', 'pidof', preview_package).strip(), 'Preview process not running'
+(out / 'preview-launch.txt').write_text(launch)
+(out / 'preview-package.txt').write_text(adb('shell', 'dumpsys', 'package', preview_package))
+assert 'versionCode=' in adb('shell', 'dumpsys', 'package', package), 'Original package disappeared'
 try:
     adb('root')
     adb('wait-for-device')

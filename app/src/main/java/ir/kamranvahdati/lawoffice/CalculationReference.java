@@ -7,7 +7,7 @@ import java.util.List;
 /** Immutable reference value. Editing/confirmation creates a new version, never mutates this one. */
 final class CalculationReference {
     enum Kind { ANNUAL_DIYAH, ECONOMIC_INDEX, TARIFF, LEGAL_RULE }
-    enum Status { OFFICIAL_VERIFIED, USER_ENTERED, NEEDS_REVIEW, SUPERSEDED }
+    enum Status { OFFICIAL_VERIFIED, REVIEWED_PUBLICATION, USER_ENTERED, NEEDS_REVIEW, SUPERSEDED }
 
     final String id, series, version, previousVersionId;
     final Kind kind;
@@ -51,7 +51,7 @@ final class CalculationReference {
         this.sourceNumber = optional(sourceNumber);
         this.sourceDate = optional(sourceDate).isEmpty() ? "" : date(sourceDate);
         this.sourceUrl = optional(sourceUrl); this.notes = optional(notes);
-        if (status == Status.OFFICIAL_VERIFIED && (manuallyEntered || this.sourceTitle.isEmpty()
+        if ((status == Status.OFFICIAL_VERIFIED || status == Status.REVIEWED_PUBLICATION) && (manuallyEntered || this.sourceTitle.isEmpty()
                 || this.sourceType.isEmpty() || this.sourceDate.isEmpty() || this.sourceUrl.isEmpty()))
             throw invalid("مبنای رسمی به مشخصات منبع تأییدشده نیاز دارد؛ ورود دستی رسمی محسوب نمی‌شود");
         if (status == Status.USER_ENTERED && !manuallyEntered)

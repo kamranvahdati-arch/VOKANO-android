@@ -297,3 +297,28 @@ unverified automatic rules to mark the version complete. The first next task is
 to acquire/verify that source pack, preserving the recovered primary historical
 text. Then complete delay eligibility/UI, diyah/arsh engines/UI and outstanding
 special tariff pathways, source-derived goldens and final production gates.
+
+## Owner-directed usable-calculations continuation — 2026-10-07
+
+Verified remote/local HEAD 6c9cfe75616e4d9297fa863f8f29afaae1e06a8b; clean tree.
+Owner now requests credible published sources while official originals are
+unavailable, and prioritizes usable installed calculations. Central publication
+is approved for later deployment, but the server is not ready. The owner-only
+panel must support manual entry independently of ChatGPT/international Internet,
+and official-source acquisition plus approval. Iranian-network operation needs
+domestically reachable auth, assets, API and storage, not merely a domestic host.
+No live server or owner-authenticated panel is claimed or fabricated.
+
+Removed manual reference editing from public navigation; historical records are
+preserved. Read-only bundled-source/status screen explicitly states there is no
+live update service. Added a separate REVIEWED_PUBLICATION reference status so a
+reputable republication is not mislabeled as direct official verification.
+
+New body-compensation path converts a court-assessed percentage of ordinary full
+diyah or an assessed fixed amount, preserves injury/date/expert/decision context,
+source snapshots and revision reasons. It does NOT diagnose injuries, determine
+arsh, automatically apply taghliz or sum overlapping injuries. Those unimplemented
+rules remain expressly outside this form. Published 1405 ordinary rate is stored
+as separate versioned data; no other-year fallback. Arsh warning survives reports.
+19 new numeric checks pass locally. New Android UI/save/restore tests are added;
+candidate CI pending. This is not yet complete 10.3 or a production APK.

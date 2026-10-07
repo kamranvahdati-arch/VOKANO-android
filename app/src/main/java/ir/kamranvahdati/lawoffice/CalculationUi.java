@@ -24,10 +24,10 @@ final class CalculationUi {
             .setItems(new String[]{"توافقی قراردادی","تعرفه‌ای؛ فروض پشتیبانی‌شده"},(d,n)->fee(n==1,null)).show());
         button("خسارت تأخیر تأدیه",()->a.preview("وضعیت بررسی محاسبه تأخیر",
             "حساب عددی شاخص‌ها آماده است؛ تکمیل کنترل شرایط دین عادی و استثناهای چک هنوز لازم است. این بخش در این نسخه توسعه‌ای برای محاسبه نهایی فعال نیست."));
-        button("دیه",()->unavailable("دیه"));button("ارش",()->unavailable("ارش"));
+        button("دیه",()->body(false,null));button("ارش",()->body(true,null));
         button("تاریخچه محاسبات",this::history);
-        button("نرخ‌ها و شاخص‌ها",()->new CalculationReferenceUi(a,()->center(related)).list(false));
-        a.page.addView(a.info("وضعیت نسخه توسعه‌ای","مرکز محاسبات هنوز کامل نشده است. تعرفه فقط فروض مشخص متن مصوب ۱۳۹۸ را پوشش می‌دهد؛ بررسی همه اصلاحات و موارد خاص هنوز تکمیل نشده است."));
+        button("منابع محاسبات و وضعیت به‌روزرسانی",this::sources);
+        a.page.addView(a.info("دامنه ابزارها","تعرفه فروض مشخص متن مصوب ۱۳۹۸ را پوشش می‌دهد؛ دیه و ارش تبدیل عددی مبلغ یا درصد اعلام‌شده‌اند. تعیین خودکار صدمه و همه موارد خاص هنوز ارائه نشده است."));
     }
     private void unavailable(String name){a.preview(name,"تأیید مبانی رسمی این بخش هنوز تکمیل نشده؛ محاسبه حقوقی فعال نیست.");}
     private void button(String title,Runnable action){TextView v=a.action(title);v.setOnClickListener(x->{try{action.run();}catch(Exception e){a.toast(message(e));}});a.page.addView(v);}
@@ -35,6 +35,64 @@ final class CalculationUi {
     private Spinner pick(String label,String[] values){a.page.addView(a.txt(label,12,a.MUTED));Spinner s=a.spinner(values);a.page.addView(s);return s;}
     private CheckBox confirm(String label){CheckBox c=new CheckBox(a);c.setText(label);c.setTextColor(a.INK);a.page.addView(c);return c;}
     private String previous(CalculationSnapshot p,String key,String fallback){return p==null?fallback:p.inputSnapshot.getOrDefault(key,fallback);}
+
+    private CalculationReference bodyRate()throws Exception{
+        try(InputStreamReader reader=new InputStreamReader(a.getAssets().open("calculation/diyah-1405.properties"),StandardCharsets.UTF_8)){
+            return CalculationBodyMath.readRate(reader);
+        }
+    }
+    void sources(){
+        a.clear("منابع محاسبات","بسته همراه برنامه؛ اتصال مرکزی هنوز راه‌اندازی نشده است");a.detailBack=()->center(related);
+        try{CalculationReference r=bodyRate();a.page.addView(a.info(r.sourceTitle,r.value+" ریال\n"+r.version+"\n"+r.sourceType+"\n"+r.sourceUrl+"\n"+r.notes));}
+        catch(Exception e){a.toast(message(e));}
+        a.page.addView(a.info("به‌روزرسانی مرکزی","پس از آماده شدن سرور، انتشار نرخ‌ها و شاخص‌ها از پنل مدیر انجام خواهد شد. این نسخه اتصال زنده یا به‌روزرسانی خودکار ندارد. ورود دستی نرخ مرجع برای کاربران عمومی ارائه نمی‌شود؛ سابقه داده‌های قبلی حذف نشده است."));
+    }
+    void body(boolean arsh,CalculationSnapshot prior){
+        a.clear(arsh?"محاسبات ارش اعلام‌شده":"محاسبات دیه اعلام‌شده","تبدیل عددی یک مبلغ یا درصد تعیین‌شده؛ نه تشخیص صدمه یا صدور حکم");a.detailBack=()->center(related);
+        EditText title=field("عنوان محاسبه",prior==null?(arsh?"ارش اعلام‌شده":"دیه اعلام‌شده"):prior.title);
+        List<OfficeDb.CaseRecord> cases=a.db.cases(null,"همه",null);List<String> names=new ArrayList<>();names.add("مستقل از پرونده");for(OfficeDb.CaseRecord c:cases)names.add(c.title);
+        Spinner casePick=pick("ارتباط محاسبه",names.toArray(new String[0]));Long selected=prior==null?(related==null?null:related.id):prior.caseId;
+        for(int i=0;i<cases.size();i++)if(selected!=null&&cases.get(i).id==selected)casePick.setSelection(i+1);
+        Spinner mode=pick("نوع ورودی",new String[]{"درصد اعلام‌شده از دیه کامل عادی","مبلغ قطعی اعلام‌شده؛ بدون تعدیل خودکار"});mode.setSelection("AMOUNT".equals(previous(prior,"bodyMode","PERCENT"))?1:0);
+        EditText value=field("درصد یا مبلغ اعلام‌شده",previous(prior,"assessedValue",""));
+        Spinner currency=pick("واحد مبلغ؛ فقط مسیر مبلغ قطعی",new String[]{"ریال","تومان"});currency.setSelection("TOMAN".equals(previous(prior,"currency","RIAL"))?1:0);
+        EditText injury=field("شرح صدمه و عضو یا منفعت",previous(prior,"injury",""));
+        EditText occurred=field("تاریخ وقوع صدمه",previous(prior,"occurredDate",""));a.bindJalaliPicker(occurred);
+        EditText effective=field("تاریخ پرداخت / ارزش‌گذاری انتخابی",previous(prior,"effectiveDate",JalaliDate.today().value()));a.bindJalaliPicker(effective);
+        EditText basis=field("مرجع، شماره و تاریخ مستند تعیین مبلغ یا درصد",previous(prior,"assessment",""));
+        EditText opinion=field("نظر کارشناسی؛ جدا از تصمیم مرجع",previous(prior,"expertOpinion",""));
+        EditText dateBasis=field("مستند انتخاب تاریخ ارزش‌گذاری",previous(prior,"dateBasis",""));
+        EditText reason=prior==null?null:field("علت تغییر نسبت به نسخه قبلی","");
+        CheckBox checked=confirm("مقدار توسط مرجع صالح تعیین شده و مبنای درصد، دیه کامل عادی است؛ این ورودی یک صدمه مستقل و بدون تغلیظ است");
+        a.page.addView(a.info("دامنه محاسبه",(arsh?CalculationSnapshot.ARSH_WARNING+"\n":"")+"نرم‌افزار درصد صدمه، تداخل دیات، مسئول پرداخت یا تغلیظ را تعیین نمی‌کند. درصد از دیه عضو، تعدد صدمات، فوت با شرایط تغلیظ و استثناهای ارزش‌گذاری در این مسیر قابل محاسبه خودکار نیستند. سال فاقد نرخ جایگزین نمی‌شود."));
+        button("محاسبه و نمایش نتیجه",()->{try{
+            if(!checked.isChecked())throw new IllegalArgumentException("مستند و دامنه محاسبه را تأیید کنید");
+            String date=CalculationReference.date(effective.getText().toString()),event=CalculationReference.date(occurred.getText().toString());
+            if(date.compareTo(event)<0)throw new IllegalArgumentException("تاریخ ارزش‌گذاری پیش از وقوع صدمه است");
+            String assessment=CalculationReference.required(basis.getText().toString(),"مستند تعیین مبلغ یا درصد");
+            CalculationArithmetic.Currency unit=currency.getSelectedItemPosition()==0?CalculationArithmetic.Currency.RIAL:CalculationArithmetic.Currency.TOMAN;
+            boolean percent=mode.getSelectedItemPosition()==0;String entered=value.getText().toString();
+            List<CalculationReference> refs=new ArrayList<>();List<String> steps=new ArrayList<>(),warnings=new ArrayList<>();
+            long money;String data="assessed-fixed-amount",exact;
+            if(percent){CalculationReference rate=bodyRate();CalculationArithmetic.Fraction result=CalculationBodyMath.assessedPercent(rate,date,entered,assessment);
+                money=result.roundedRials(RoundingMode.HALF_UP);exact=result.toString();refs.add(rate);data=rate.version;
+                steps.add(rate.value+" × "+entered+" / 100 = "+exact+" ریال؛ گرد کردن فقط در پایان");warnings.add(rate.sourceType);
+            }else{money=CalculationBodyMath.assessedAmount(entered,unit,assessment);exact=money+"/1";steps.add("تبدیل دقیق مبلغ اعلام‌شده به ریال؛ بدون تعدیل سالانه یا تغلیظ");}
+            Map<String,String> inputs=new LinkedHashMap<>(),results=new LinkedHashMap<>();
+            Long caseId=casePick.getSelectedItemPosition()==0?null:cases.get(casePick.getSelectedItemPosition()-1).id;
+            inputs.put("title",title.getText().toString());inputs.put("caseId",caseId==null?"":caseId.toString());inputs.put("bodyMode",percent?"PERCENT":"AMOUNT");
+            inputs.put("assessedValue",entered);inputs.put("currency",unit.name());inputs.put("injury",CalculationReference.required(injury.getText().toString(),"شرح صدمه"));
+            inputs.put("occurredDate",event);inputs.put("effectiveDate",date);inputs.put("assessment",assessment);inputs.put("expertOpinion",opinion.getText().toString());
+            inputs.put("dateBasis",CalculationReference.required(dateBasis.getText().toString(),"مستند تاریخ ارزش‌گذاری"));
+            inputs.put("sourceUrl","https://natlex.ilo.org/dyn/natlex2/natlex2/files/download/103202/penal%20code.pdf");
+            results.put("کسر دقیق ریالی",exact);results.put("مبلغ",CalculationArithmetic.display(money,CalculationArithmetic.Currency.RIAL));results.put("معادل تومان",CalculationArithmetic.display(money,CalculationArithmetic.Currency.TOMAN));
+            warnings.add("تبدیل عددی مقدار اعلام‌شده با مسئولیت بررسی مستندات پرونده؛ نه تعیین استحقاق، درصد، تغلیظ، تداخل یا مبلغ قابل وصول. بررسی همه اصلاحات و استثناها تکمیل نشده است.");
+            long now=Math.max(System.currentTimeMillis(),prior==null?0:prior.createdAt+1);List<CalculationSnapshot.Override> audit=new ArrayList<>();
+            if(prior!=null){Set<String> keys=new LinkedHashSet<>(prior.inputSnapshot.keySet());keys.addAll(inputs.keySet());for(String key:keys){String old=prior.inputSnapshot.getOrDefault(key,""),n=inputs.getOrDefault(key,"");if(!old.equals(n))audit.add(new CalculationSnapshot.Override(CalculationSnapshot.OverrideType.INPUT,key,old,n,now,CalculationReference.required(reason.getText().toString(),"علت تغییر")));}}
+            show(new CalculationSnapshot(UUID.randomUUID().toString(),prior==null?"":prior.id,title.getText().toString(),caseId,arsh?CalculationSnapshot.Type.ARSH_ESTIMATE:CalculationSnapshot.Type.DIYAH,
+                CalculationBodyMath.ENGINE_VERSION,"assessed-input-conversion/1",data,JalaliDate.today().value(),date,inputs,results,refs,steps,warnings,audit,RoundingMode.HALF_UP,now,now),false);
+        }catch(Exception e){a.toast(message(e));}});
+    }
 
     void fee(boolean tariff,CalculationSnapshot prior){
         a.clear(tariff?"حق‌الوکاله تعرفه‌ای":"حق‌الوکاله توافقی","ورودی‌ها را بررسی کنید؛ ثبت محاسبه مبلغ پرونده یا قرارداد را تغییر نمی‌دهد");
@@ -141,6 +199,8 @@ final class CalculationUi {
         button("اشتراک متن نتیجه",()->{Intent i=new Intent(Intent.ACTION_SEND);i.setType("text/plain");i.putExtra(Intent.EXTRA_TEXT,report);a.startActivity(Intent.createChooser(i,"اشتراک محاسبه"));});
         if(saved&&(s.type==CalculationSnapshot.Type.TARIFF_FEE||s.type==CalculationSnapshot.Type.AGREED_FEE))
             button("نسخه جدید / محاسبه مجدد",()->fee(s.type==CalculationSnapshot.Type.TARIFF_FEE,s));
+        if(saved&&(s.type==CalculationSnapshot.Type.DIYAH||s.type==CalculationSnapshot.Type.ARSH_ESTIMATE))
+            button("نسخه جدید / محاسبه مجدد",()->body(s.type==CalculationSnapshot.Type.ARSH_ESTIMATE,s));
     }
     private static String message(Exception e){return e.getMessage()==null?"محاسبه قابل انجام نیست":e.getMessage();}
 }

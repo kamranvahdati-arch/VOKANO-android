@@ -245,3 +245,26 @@ No new automatic rule is enabled by this review. Remaining: amendments/current
 status, annual official circular, injury-specific schedule, exception rulings.
 WIPO IR024 identifies a Persian civil-procedure PDF, but its download returned
 403; article 522 has still not been directly reviewed from that document.
+
+## Credible-publication path requested by owner — 2026-10-07
+
+Full Tasnim report 3620901 (1405/03/29) and Nournews report 303204
+(1404/12/27), both reporting the judiciary announcement, agree on ordinary full
+diyah of 21,000,000,000 IRR from 1405/01/01:
+https://tasnimnews.ir/fa/news/1405/03/29/3620901/
+https://nournews.ir/fa/news/303204/
+The separate 1405 data pack records REVIEWED_PUBLICATION, not OFFICIAL_VERIFIED;
+publication date is not fabricated as circular date, and no circular number is
+invented. Assessed-percentage conversions use this explicitly labeled source.
+
+Article 522 read in full at https://nezamat.ir/post-31264/ (republication, not
+direct official access): ordinary current-money debt requires demand, ability,
+refusal, substantial index change, and consideration of alternative settlement.
+This evidence advances the eligibility review, not a blanket current-law opinion.
+
+CBI page 4930 was identified but table retrieval timed out. An independent legal
+site table/PDF was inspected at vakilsoal.com; the annual-average entry for 1399
+exceeds every listed monthly value. That inconsistency and missing independent
+confirmation prevent accepting this table as a verified data pack. No guessed
+indices or copied calculator outputs are seeded. Delay UI remains gated pending
+a dependable index source and reviewed eligibility/exception handling.

@@ -15,6 +15,38 @@ import java.util.UUID;
 
 @RunWith(AndroidJUnit4.class)
 public class CalculationUiTest {
+    @Test public void assessedArshRetainsWarningReferenceAndHistory()throws Exception{
+        Instrumentation ins=InstrumentationRegistry.getInstrumentation();Context c=ins.getTargetContext();
+        MainActivity a=(MainActivity)ins.startActivitySync(new Intent(c,MainActivity.class).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK|Intent.FLAG_ACTIVITY_CLEAR_TASK));ins.waitForIdleSync();
+        final String[] original={null};
+        try{ins.runOnMainSync(()->{try{
+            original[0]=a.db.exportJson();OfficeCalculations repo=new OfficeCalculations(a.db);int before=repo.list(null).size();
+            CalculationUi ui=new CalculationUi(a);ui.center(null);assertNull(findText(a.page,"نرخ‌ها و شاخص‌ها"));
+            click(a.page,"ارش");input(a.page,"درصد یا مبلغ اعلام‌شده").setText("۱");
+            input(a.page,"شرح صدمه و عضو یا منفعت").setText("Synthetic assessed injury");
+            input(a.page,"تاریخ وقوع صدمه").setText("1404/11/01");input(a.page,"تاریخ پرداخت / ارزش‌گذاری انتخابی").setText("1405/01/01");
+            input(a.page,"مرجع، شماره و تاریخ مستند تعیین مبلغ یا درصد").setText("Synthetic court decision 1");
+            input(a.page,"نظر کارشناسی؛ جدا از تصمیم مرجع").setText("Expert proposed 2 percent, not adopted");
+            input(a.page,"مستند انتخاب تاریخ ارزش‌گذاری").setText("Synthetic payment basis");
+            click(a.page,"محاسبه و نمایش نتیجه");assertEquals(before,repo.list(null).size());assertNotNull(input(a.page,"درصد یا مبلغ اعلام‌شده"));
+            ((CheckBox)findText(a.page,"مقدار توسط مرجع صالح تعیین شده و مبنای درصد، دیه کامل عادی است؛ این ورودی یک صدمه مستقل و بدون تغلیظ است")).setChecked(true);
+            click(a.page,"محاسبه و نمایش نتیجه");click(a.page,"ذخیره محاسبه");
+            CalculationSnapshot first=repo.list(null).get(0);assertEquals(before+1,repo.list(null).size());
+            assertEquals("210,000,000 ریال",first.resultSnapshot.get("مبلغ"));assertEquals(1,first.references.size());
+            assertEquals(CalculationReference.Status.REVIEWED_PUBLICATION,first.references.get(0).status);
+            String report=CalculationReport.text(first);assertTrue(report.contains(CalculationSnapshot.ARSH_WARNING));
+            assertTrue(a.html(first.title,report).contains(CalculationSnapshot.ARSH_WARNING));assertTrue(report.contains("Expert proposed 2 percent"));
+            click(a.page,"نسخه جدید / محاسبه مجدد");input(a.page,"درصد یا مبلغ اعلام‌شده").setText("۲");
+            input(a.page,"علت تغییر نسبت به نسخه قبلی").setText("New assessment fixture");
+            ((CheckBox)findText(a.page,"مقدار توسط مرجع صالح تعیین شده و مبنای درصد، دیه کامل عادی است؛ این ورودی یک صدمه مستقل و بدون تغلیظ است")).setChecked(true);
+            click(a.page,"محاسبه و نمایش نتیجه");click(a.page,"ذخیره محاسبه");
+            CalculationSnapshot next=repo.list(null).get(0);assertEquals(first.id,next.previousSnapshotId);assertFalse(next.overrides.isEmpty());
+            assertEquals("420,000,000 ریال",next.resultSnapshot.get("مبلغ"));assertEquals("210,000,000 ریال",repo.get(first.id).resultSnapshot.get("مبلغ"));
+            String backup=a.db.exportJson();a.db.importJson(backup);assertEquals(CalculationReference.Status.REVIEWED_PUBLICATION,repo.get(first.id).references.get(0).status);
+            ui.sources();assertNotNull(findText(a.page,"به‌روزرسانی مرکزی"));
+        }catch(Exception e){throw new AssertionError(e);}});ins.waitForIdleSync();}
+        finally{ins.runOnMainSync(()->{try{if(original[0]!=null)a.db.importJson(original[0]);}catch(Exception e){throw new AssertionError(e);}finally{a.finish();}});ins.waitForIdleSync();}
+    }
     @Test public void referenceEntryRequiresReviewAndPreservesVersions()throws Exception{
         Instrumentation ins=InstrumentationRegistry.getInstrumentation();Context c=ins.getTargetContext();
         MainActivity a=(MainActivity)ins.startActivitySync(new Intent(c,MainActivity.class).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK|Intent.FLAG_ACTIVITY_CLEAR_TASK));ins.waitForIdleSync();
