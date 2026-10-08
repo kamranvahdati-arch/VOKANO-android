@@ -51,3 +51,7 @@ runs stopped before instrumentation. The baseline application source remains
 unchanged; its test runner is shared explicitly in the workflow alongside the
 upgrade fixture. This deliberately serializes baseline fixture creation, while
 the separate candidate concurrency regression still tests simultaneous readers.
+
+CI 37662577692 (21fccf6) completed successfully on API30 and API35. Both
+baseline seed/reopen and candidate upgrade/concurrency suites passed.
+Test-only signing remains in use; this is not production-signature evidence.

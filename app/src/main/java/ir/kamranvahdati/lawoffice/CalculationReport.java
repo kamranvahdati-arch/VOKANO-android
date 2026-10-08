@@ -59,6 +59,8 @@ final class CalculationReport {
     }
     private static String label(String key){
         switch(key){
+            case "dueDate":return "سررسید / تاریخ چک";case "demandDate":return "تاریخ مطالبه";
+            case "startDate":return "مبدأ حقوقی";case "delayMode":return "نوع دین";case "scopeConfirmed":return "شرایط تأییدشده";
             case "bodyMode":return "روش تبدیل دیه / ارش";case "assessedValue":return "مقدار اعلام‌شده";
             case "injury":return "صدمه و عضو یا منفعت";case "occurredDate":return "تاریخ وقوع";
             case "assessment":return "مستند تعیین مرجع";case "expertOpinion":return "نظر کارشناسی مستقل";

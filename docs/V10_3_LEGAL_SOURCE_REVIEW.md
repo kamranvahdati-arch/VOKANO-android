@@ -268,3 +268,20 @@ exceeds every listed monthly value. That inconsistency and missing independent
 confirmation prevent accepting this table as a verified data pack. No guessed
 indices or copied calculator outputs are seeded. Delay UI remains gated pending
 a dependable index source and reviewed eligibility/exception handling.
+
+## Historical delay activation review — 2026-10-08
+
+Read the stored CBI facsimile again and checked the 36 cells for 1399–1401.
+The application pack preserves those values and excludes annual averages.
+Article 522 republication at nezamat.ir/post-31264 was re-read, operative
+paragraph: demand, financial ability, refusal, substantial index change and
+contrary settlement matter. The UI asks the lawyer to review those case facts
+and record the start-date basis; it does not algorithmically decide them.
+The cheque mode requires explicit review of the previously inspected ruling
+812 and equal cheque/start dates. Exceptions are excluded, not deemed absent.
+Ruling 850 historical holding and exact-ratio implementation are unchanged.
+
+Ruling 877 republication at daftarvakil.ir/قوانین-و-مصوبات/195484/ was read.
+It concerns remaining bankruptcy assets and creditor loss, not a generic
+cheque rule. Bankruptcy is explicitly outside this form; no exception engine
+is claimed. Direct Dotic re-fetch failed. Current indices remain unverified.

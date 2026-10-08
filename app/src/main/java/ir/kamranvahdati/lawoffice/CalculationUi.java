@@ -22,8 +22,7 @@ final class CalculationUi {
         a.detailBack=c==null?a::dashboard:()->a.caseDetail(c);
         button("حق‌الوکاله",()->new AlertDialog.Builder(a).setTitle("نوع حق‌الوکاله")
             .setItems(new String[]{"توافقی قراردادی","تعرفه‌ای؛ فروض پشتیبانی‌شده"},(d,n)->fee(n==1,null)).show());
-        button("خسارت تأخیر تأدیه",()->a.preview("وضعیت بررسی محاسبه تأخیر",
-            "حساب عددی شاخص‌ها آماده است؛ تکمیل کنترل شرایط دین عادی و استثناهای چک هنوز لازم است. این بخش در این نسخه توسعه‌ای برای محاسبه نهایی فعال نیست."));
+        button("خسارت تأخیر تأدیه",()->delay(null));
         button("دیه",()->body(false,null));button("ارش",()->body(true,null));
         button("تاریخچه محاسبات",this::history);
         button("منابع محاسبات و وضعیت به‌روزرسانی",this::sources);
@@ -45,7 +44,64 @@ final class CalculationUi {
         a.clear("منابع محاسبات","بسته همراه برنامه؛ اتصال مرکزی هنوز راه‌اندازی نشده است");a.detailBack=()->center(related);
         try{CalculationReference r=bodyRate();a.page.addView(a.info(r.sourceTitle,r.value+" ریال\n"+r.version+"\n"+r.sourceType+"\n"+r.sourceUrl+"\n"+r.notes));}
         catch(Exception e){a.toast(message(e));}
+        a.page.addView(a.info("شاخص‌های تأخیر تأدیه","پوشش: ۱۳۹۹ تا ۱۴۰۱؛ نسخه "+CalculationDelayPack.VERSION+"\nمنبع تصویر: "+CalculationDelayPack.URL+"\nشاخص جدیدتر یا متعارض در این نسخه جایگزین نمی‌شود."));
         a.page.addView(a.info("به‌روزرسانی مرکزی","پس از آماده شدن سرور، انتشار نرخ‌ها و شاخص‌ها از پنل مدیر انجام خواهد شد. این نسخه اتصال زنده یا به‌روزرسانی خودکار ندارد. ورود دستی نرخ مرجع برای کاربران عمومی ارائه نمی‌شود؛ سابقه داده‌های قبلی حذف نشده است."));
+    }
+    private CalculationDelayPack delayPack()throws Exception{
+        try(InputStreamReader reader=new InputStreamReader(a.getAssets().open("calculation/delay-indices-1399-1401.properties"),StandardCharsets.UTF_8)){
+            return new CalculationDelayPack(reader);
+        }
+    }
+    void delay(CalculationSnapshot prior){
+        a.clear("خسارت تأخیر تأدیه","پوشش شاخص فعلی: ۱۳۹۹ تا ۱۴۰۱؛ محاسبه مشروط به بررسی حقوقی پرونده");a.detailBack=()->center(related);
+        EditText title=field("عنوان محاسبه",prior==null?"خسارت تأخیر تأدیه":prior.title);
+        List<OfficeDb.CaseRecord> cases=a.db.cases(null,"همه",null);List<String> names=new ArrayList<>();names.add("مستقل از پرونده");for(OfficeDb.CaseRecord c:cases)names.add(c.title);
+        Spinner casePick=pick("ارتباط محاسبه",names.toArray(new String[0]));Long selected=prior==null?(related==null?null:related.id):prior.caseId;
+        for(int i=0;i<cases.size();i++)if(selected!=null&&cases.get(i).id==selected)casePick.setSelection(i+1);
+        Spinner mode=pick("نوع دین",new String[]{"دین عادی؛ شرایط ماده ۵۲۲","چک مشمول قاعده عمومی رأی ۸۱۲"});
+        mode.setSelection(prior!=null&&prior.type==CalculationSnapshot.Type.CHEQUE_DELAY?1:0);
+        Spinner currency=pick("واحد اصل دین",new String[]{"ریال","تومان"});currency.setSelection("TOMAN".equals(previous(prior,"currency","RIAL"))?1:0);
+        EditText amount=field("اصل دین؛ بدون خسارت قبلی",previous(prior,"amount",""));
+        EditText due=field("تاریخ سررسید / تاریخ مندرج در چک",previous(prior,"dueDate",""));a.bindJalaliPicker(due);
+        EditText demand=field("تاریخ مطالبه؛ الزامی برای دین عادی",previous(prior,"demandDate",""));a.bindJalaliPicker(demand);
+        EditText start=field("مبدأ حقوقی بررسی‌شده",previous(prior,"startDate",""));a.bindJalaliPicker(start);
+        EditText end=field("تاریخ پرداخت / پایان محاسبه",previous(prior,"effectiveDate",""));a.bindJalaliPicker(end);
+        EditText basis=field("مستند انتخاب مبدأ و احراز شرایط",previous(prior,"basis",""));
+        EditText reason=prior==null?null:field("علت تغییر نسبت به نسخه قبلی","");
+        CheckBox money=confirm("دین از نوع وجه رایج ایران است و مبلغ، اصل دین بدون خسارت قبلی است");
+        CheckBox ordinary=confirm("در دین عادی، مطالبه، تمکن، امتناع، تغییر فاحش شاخص و نبود مصالحه مغایر را بررسی کرده‌ام");
+        CheckBox cheque=confirm("در مسیر چک، شمول قاعده رأی ۸۱۲ و تاریخ مندرج در چک را بررسی کرده‌ام");
+        CheckBox simple=confirm("پرونده فاقد پرداخت جزئی، اقساط، اعسار، ورشکستگی، وجه التزام یا استثنای مؤثر دیگر است");
+        a.page.addView(a.info("دامنه و منابع","این فرم استحقاق یا مبدأ را خودکار تعیین نمی‌کند. ماده ۵۲۲، قاعده عمومی رأی ۸۱۲ و فرمول رأی ۸۵۰ مبنای بررسی‌اند. موارد خاص و شاخص ماه‌های خارج از ۱۳۹۹ تا ۱۴۰۱ پشتیبانی نمی‌شوند. اصل دین در شاخص پایان تقسیم بر شاخص مبدأ ضرب می‌شود؛ سود مرکب و محاسبه روزشمار اعمال نمی‌شود."));
+        button("محاسبه و نمایش نتیجه",()->{try{
+            CalculationDelayMath.Mode selectedMode=mode.getSelectedItemPosition()==0?CalculationDelayMath.Mode.ORDINARY_DEBT:CalculationDelayMath.Mode.CHEQUE;
+            String d=CalculationReference.date(due.getText().toString()),s=CalculationReference.date(start.getText().toString()),e=CalculationReference.date(end.getText().toString());
+            String demandValue=demand.getText().toString().trim();if(!demandValue.isEmpty())demandValue=CalculationReference.date(demandValue);
+            String explanation=CalculationDelayPack.validateScope(selectedMode,d,demandValue,s,e,basis.getText().toString(),money.isChecked(),ordinary.isChecked(),cheque.isChecked(),simple.isChecked());
+            CalculationArithmetic.Currency unit=currency.getSelectedItemPosition()==0?CalculationArithmetic.Currency.RIAL:CalculationArithmetic.Currency.TOMAN;
+            long principal=CalculationArithmetic.money(amount.getText().toString(),unit);CalculationDelayPack pack=delayPack();
+            CalculationReference first=pack.at(s),last=pack.at(e);
+            CalculationDelayMath.Result r=CalculationDelayMath.calculate(selectedMode,principal,s,e,explanation,CalculationDelayPack.SERIES,first,last,RoundingMode.HALF_UP);
+            Long caseId=casePick.getSelectedItemPosition()==0?null:cases.get(casePick.getSelectedItemPosition()-1).id;
+            Map<String,String> inputs=new LinkedHashMap<>(),results=new LinkedHashMap<>();
+            inputs.put("title",title.getText().toString());inputs.put("caseId",caseId==null?"":caseId.toString());inputs.put("amount",amount.getText().toString());inputs.put("currency",unit.name());
+            inputs.put("dueDate",d);inputs.put("demandDate",demandValue);inputs.put("startDate",s);inputs.put("effectiveDate",e);inputs.put("basis",explanation);
+            inputs.put("delayMode",selectedMode.name());inputs.put("scopeConfirmed","وجه رایج و اصل دین؛ بدون موارد خاص؛ تأیید شرایط مسیر انتخابی توسط کاربر");
+            inputs.put("sourceUrl","https://nezamat.ir/post-31264/ | https://dotic.ir/news/17037/ | https://guilanbar.ir/wp-content/uploads/2021/07/images_1398_09_812.jpeg.webp");
+            results.put("اصل دین",CalculationArithmetic.display(principal,CalculationArithmetic.Currency.RIAL));
+            results.put("خسارت تأخیر",CalculationArithmetic.display(r.damagesRials,CalculationArithmetic.Currency.RIAL));
+            results.put("اصل و خسارت",CalculationArithmetic.display(r.adjustedRials,CalculationArithmetic.Currency.RIAL));
+            results.put("معادل تومان اصل و خسارت",CalculationArithmetic.display(r.adjustedRials,CalculationArithmetic.Currency.TOMAN));results.put("کسر دقیق ریالی",r.exactAdjustedRials);
+            List<String> steps=Arrays.asList(principal+" × "+last.value+" ÷ "+first.value+" = "+r.exactAdjustedRials+" ریال", "خسارت = مبلغ تعدیل‌شده منهای اصل دین؛ گرد کردن فقط در پایان");
+            List<String> warnings=Arrays.asList("نتیجه مشروط به صحت بررسی حقوقی کاربر است؛ تعیین استحقاق و مبلغ قابل وصول بر عهده مرجع صالح است. موارد خاص در این مسیر پشتیبانی نمی‌شوند.","شاخص‌ها از تصویر بازنشرشده جدول بانک مرکزی تطبیق داده شده‌اند؛ پوشش فقط ۱۳۹۹ تا ۱۴۰۱ است. اتصال به‌روزرسانی زنده وجود ندارد.");
+            long now=Math.max(System.currentTimeMillis(),prior==null?0:prior.createdAt+1);List<CalculationSnapshot.Override> audit=new ArrayList<>();
+            if(prior!=null){String why=CalculationReference.required(reason.getText().toString(),"علت تغییر");Set<String> keys=new LinkedHashSet<>(prior.inputSnapshot.keySet());keys.addAll(inputs.keySet());for(String key:keys){String old=prior.inputSnapshot.getOrDefault(key,""),value=inputs.getOrDefault(key,"");if(!old.equals(value))audit.add(new CalculationSnapshot.Override(CalculationSnapshot.OverrideType.INPUT,key,old,value,now,why));}}
+            List<CalculationReference> refs=first.id.equals(last.id)?Collections.singletonList(first):Arrays.asList(first,last);
+            show(new CalculationSnapshot(UUID.randomUUID().toString(),prior==null?"":prior.id,title.getText().toString(),caseId,
+                selectedMode==CalculationDelayMath.Mode.ORDINARY_DEBT?CalculationSnapshot.Type.ORDINARY_DEBT_DELAY:CalculationSnapshot.Type.CHEQUE_DELAY,
+                CalculationDelayMath.ENGINE_VERSION,"reviewed-simple-delay-522-812-850/1",CalculationDelayPack.VERSION,JalaliDate.today().value(),e,
+                inputs,results,refs,steps,warnings,audit,RoundingMode.HALF_UP,now,now),false);
+        }catch(Exception e){a.toast(message(e));}});
     }
     void body(boolean arsh,CalculationSnapshot prior){
         a.clear(arsh?"محاسبات ارش اعلام‌شده":"محاسبات دیه اعلام‌شده","تبدیل عددی یک مبلغ یا درصد تعیین‌شده؛ نه تشخیص صدمه یا صدور حکم");a.detailBack=()->center(related);
@@ -199,6 +255,8 @@ final class CalculationUi {
         button("اشتراک متن نتیجه",()->{Intent i=new Intent(Intent.ACTION_SEND);i.setType("text/plain");i.putExtra(Intent.EXTRA_TEXT,report);a.startActivity(Intent.createChooser(i,"اشتراک محاسبه"));});
         if(saved&&(s.type==CalculationSnapshot.Type.TARIFF_FEE||s.type==CalculationSnapshot.Type.AGREED_FEE))
             button("نسخه جدید / محاسبه مجدد",()->fee(s.type==CalculationSnapshot.Type.TARIFF_FEE,s));
+        if(saved&&(s.type==CalculationSnapshot.Type.ORDINARY_DEBT_DELAY||s.type==CalculationSnapshot.Type.CHEQUE_DELAY))
+            button("نسخه جدید / محاسبه مجدد",()->delay(s));
         if(saved&&(s.type==CalculationSnapshot.Type.DIYAH||s.type==CalculationSnapshot.Type.ARSH_ESTIMATE))
             button("نسخه جدید / محاسبه مجدد",()->body(s.type==CalculationSnapshot.Type.ARSH_ESTIMATE,s));
     }

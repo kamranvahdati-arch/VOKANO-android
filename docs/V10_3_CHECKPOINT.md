@@ -322,3 +322,41 @@ rules remain expressly outside this form. Published 1405 ordinary rate is stored
 as separate versioned data; no other-year fallback. Arsh warning survives reports.
 19 new numeric checks pass locally. New Android UI/save/restore tests are added;
 candidate CI pending. This is not yet complete 10.3 or a production APK.
+
+## Verified upgrade and bounded delay form — 2026-10-08
+
+Verified origin `kamranvahdati-arch/VOKANO-android`, branch codex/v10.3, HEAD
+21fccf63ee82329a6451f87151b0cac06367ad4f, clean before this increment.
+CI 37662577692 SUCCESS: foundation 112933564622, API30 112933564540,
+API35 112933564096. Logs reviewed: baseline seed/reopen, installed upgrade,
+key concurrency, calculation storage/UI, backup and scoped regressions passed.
+The original failure's exact root cause is not retrospectively proved.
+
+Added historical 1399–1401 delay pack, read-only and versioned; 36 cells
+rechecked visually against the saved facsimile. New simple-debt/cheque form
+requires explicit case eligibility/date review and excludes special cases.
+Missing months block calculation. No 1405 current index is invented or merged
+with Statistical Center data. Same-month references are deduplicated.
+Reports distinguish principal, damages and adjusted sum; snapshots preserve
+indices, scope attestations, date basis and revision reasons. Existing schema16
+and backup format are unchanged. Local delay checks: 26 existing +57 new PASS.
+New Android UI/backup/revision test is added; this changed candidate CI pending.
+
+Next: verify changed-candidate CI, complete approved entry-screen alignment.
+Current index provenance, comprehensive legal special cases and permanent
+production-signing access remain open release gates. No final 10.3 claim.
+
+### Publication gate in this continuation
+
+Local code commit: 1610560 (historical delay form and tests). Automatic approval
+review rejected git push because explicit authorization to publish source/docs
+to the external GitHub repository was not established by that reviewer. Do not
+retry through a connector or alternate transport. Ask owner authorization for
+that specific push. Remote build/emulator tests for this increment have not run.
+Local Android SDK/Gradle are unavailable; pure Java validation passed as above.
+No new final APK was built. Approved entry-screen work follows the changed
+calculation candidate's Android verification, preserving the owner's sequence.
+
+Owner explicitly approved publishing these changes to the named public GitHub
+repository/branch on 2026-10-08. Resume publication and candidate CI. This
+evidence update intentionally enables CI for the changed application tree.

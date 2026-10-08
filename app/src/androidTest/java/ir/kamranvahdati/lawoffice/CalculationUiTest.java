@@ -15,6 +15,41 @@ import java.util.UUID;
 
 @RunWith(AndroidJUnit4.class)
 public class CalculationUiTest {
+    @Test public void delayHistoricalFormPersistsRevisionsAndRejectsMissingIndex()throws Exception{
+        Instrumentation ins=InstrumentationRegistry.getInstrumentation();Context c=ins.getTargetContext();
+        MainActivity a=(MainActivity)ins.startActivitySync(new Intent(c,MainActivity.class).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK|Intent.FLAG_ACTIVITY_CLEAR_TASK));ins.waitForIdleSync();
+        final String[] original={null};
+        try{ins.runOnMainSync(()->{try{
+            original[0]=a.db.exportJson();OfficeCalculations repo=new OfficeCalculations(a.db);int before=repo.list(null).size();
+            CalculationUi ui=new CalculationUi(a);ui.center(null);click(a.page,"خسارت تأخیر تأدیه");
+            input(a.page,"اصل دین؛ بدون خسارت قبلی").setText("۲۲۹۹۰۰۰");
+            input(a.page,"تاریخ سررسید / تاریخ مندرج در چک").setText("1399/01/01");
+            input(a.page,"تاریخ مطالبه؛ الزامی برای دین عادی").setText("1399/01/01");
+            input(a.page,"مبدأ حقوقی بررسی‌شده").setText("1399/01/01");
+            input(a.page,"تاریخ پرداخت / پایان محاسبه").setText("1401/12/29");
+            input(a.page,"مستند انتخاب مبدأ و احراز شرایط").setText("Synthetic reviewed case fixture");
+            click(a.page,"محاسبه و نمایش نتیجه");assertNull(findText(a.page,"ذخیره محاسبه"));
+            confirmDelay(a.page);
+            input(a.page,"تاریخ پرداخت / پایان محاسبه").setText("1405/01/01");
+            click(a.page,"محاسبه و نمایش نتیجه");assertNull(findText(a.page,"ذخیره محاسبه"));
+            input(a.page,"تاریخ پرداخت / پایان محاسبه").setText("1401/12/29");
+            click(a.page,"محاسبه و نمایش نتیجه");click(a.page,"ذخیره محاسبه");
+            CalculationSnapshot first=repo.list(null).get(0);assertEquals(before+1,repo.list(null).size());
+            assertEquals("7,943,000 ریال",first.resultSnapshot.get("اصل و خسارت"));assertEquals(2,first.references.size());
+            String report=CalculationReport.text(first);assertTrue(report.contains("229.9"));assertTrue(report.contains("794.3"));assertTrue(report.contains("۱۳۹۹ تا ۱۴۰۱"));
+            click(a.page,"نسخه جدید / محاسبه مجدد");input(a.page,"اصل دین؛ بدون خسارت قبلی").setText("4598000");
+            input(a.page,"علت تغییر نسبت به نسخه قبلی").setText("Corrected principal fixture");confirmDelay(a.page);
+            click(a.page,"محاسبه و نمایش نتیجه");click(a.page,"ذخیره محاسبه");
+            CalculationSnapshot next=repo.list(null).get(0);assertEquals(first.id,next.previousSnapshotId);assertFalse(next.overrides.isEmpty());
+            assertEquals("15,886,000 ریال",next.resultSnapshot.get("اصل و خسارت"));
+            String backup=a.db.exportJson();a.db.importJson(backup);assertEquals("7,943,000 ریال",repo.get(first.id).resultSnapshot.get("اصل و خسارت"));
+        }catch(Exception e){throw new AssertionError(e);}});ins.waitForIdleSync();}
+        finally{ins.runOnMainSync(()->{try{if(original[0]!=null)a.db.importJson(original[0]);}catch(Exception e){throw new AssertionError(e);}finally{a.finish();}});ins.waitForIdleSync();}
+    }
+    private static void confirmDelay(View root){
+        for(String label:new String[]{"دین از نوع وجه رایج ایران است و مبلغ، اصل دین بدون خسارت قبلی است","در دین عادی، مطالبه، تمکن، امتناع، تغییر فاحش شاخص و نبود مصالحه مغایر را بررسی کرده‌ام","پرونده فاقد پرداخت جزئی، اقساط، اعسار، ورشکستگی، وجه التزام یا استثنای مؤثر دیگر است"})
+            ((CheckBox)findText(root,label)).setChecked(true);
+    }
     @Test public void assessedArshRetainsWarningReferenceAndHistory()throws Exception{
         Instrumentation ins=InstrumentationRegistry.getInstrumentation();Context c=ins.getTargetContext();
         MainActivity a=(MainActivity)ins.startActivitySync(new Intent(c,MainActivity.class).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK|Intent.FLAG_ACTIVITY_CLEAR_TASK));ins.waitForIdleSync();
