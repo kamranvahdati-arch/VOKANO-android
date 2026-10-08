@@ -477,3 +477,24 @@ Foundation: 65 PASS via java com.sun.tools.javac.Main (javac launcher absent).
 Tariff: 96 PASS. Android test added but not executed for this tree; no final APK.
 Next action: authorized push, inspect changed-tree API30/35 CI, then remaining
 special-case scope and final production release gates described above.
+
+## Resume 2026-10-08: independent special tariff paths
+
+Verified local e14bfc54 tree b911fd5a and remote 6c521fba. Previous candidate
+CI 37805901178 and permanent-signature upgrade 37805901383 are SUCCESS.
+Prior publication-approval pause is resolved by the owner's explicit approval.
+The successful signed candidate is a bounded implementation, not scope completion.
+
+Added immutable v4 tariff pack and independent special modes for article 23
+whole-case settlement/arbitration, article 5 equal counsel shares, article 14
+note 3 non-compounding extra charges against the most serious charge, and
+article 22 certified specialty. Source qavanin.ir IDS16814137751518820692
+read again today. Each mode requires documented eligibility; combinations with
+other special modes or disposition are not inferred. Exact fractions are kept
+through final rounding, and reports label per-counsel amounts. New inputs and
+rule asset snapshot survive revision/backup. Existing v1/v2/v3 packs unchanged.
+Tariff numerical suite: 132 PASS. Added Android save/revise/restore test;
+changed-tree Android build and tests pending. No schema/identity changes.
+Remaining: final-by-value tariff and other special intersections, partial-payment/
+instalment and insolvency delay paths, wider injuries and overlap, and final
+same-key signing plus upgrade validation of the eventual completed tree.

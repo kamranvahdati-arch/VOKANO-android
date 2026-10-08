@@ -224,7 +224,7 @@ final class CalculationUi {
         a.clear(tariff?"حق‌الوکاله تعرفه‌ای":"حق‌الوکاله توافقی","ورودی‌ها را بررسی کنید؛ ثبت محاسبه مبلغ پرونده یا قرارداد را تغییر نمی‌دهد");
         a.detailBack=()->center(related);
         final CalculationTariff.Rules rules;
-        try(InputStreamReader reader=new InputStreamReader(a.getAssets().open("calculation/tariff-1398-reviewed-v3.properties"),StandardCharsets.UTF_8)){
+        try(InputStreamReader reader=new InputStreamReader(a.getAssets().open("calculation/tariff-1398-reviewed-v4.properties"),StandardCharsets.UTF_8)){
             rules=new CalculationTariff.Rules(reader);
         }catch(Exception e){a.toast(message(e));return;}
         EditText title=field("عنوان محاسبه",prior==null?(tariff?"محاسبه تعرفه":"حق‌الوکاله توافقی"):prior.title);
@@ -241,7 +241,7 @@ final class CalculationUi {
         EditText effective=field("تاریخ مبنای محاسبه",previous(prior,"effectiveDate",JalaliDate.today().value()));a.bindJalaliPicker(effective);
         EditText basis=field("توضیح مستند انتخاب مبلغ و مبنا",previous(prior,"basis",""));
         EditText reason=prior==null?null:field("علت تغییر نسبت به نسخه قبلی","");
-        final List<String> ids=new ArrayList<>();final Spinner category,stage,disposition;final CheckBox supported,prosecutor,finalTrial;
+        final List<String> ids=new ArrayList<>();final Spinner category,stage,disposition,special;final CheckBox supported,prosecutor,finalTrial;
         if(tariff){
             ids.add("FINANCIAL");ids.add("CIVIL_ENFORCEMENT");ids.addAll(rules.ranges.keySet());List<String> labels=new ArrayList<>();labels.add("مالی؛ پلکانی ماده ۹، غیرقطعی از حیث بها");labels.add("اجرای احکام حقوقی و اسناد رسمی؛ ماده ۲۵");
             for(CalculationTariff.Range r:rules.ranges.values())labels.add(r.label);
@@ -253,10 +253,13 @@ final class CalculationUi {
             disposition=pick("نتیجه دادرسی؛ قرارهای مشخص ماده ۱۲",new String[]{"عادی؛ بدون قرار خاص","ابطال دادخواست پیش از دفاع؛ بدوی","رد دادخواست پس از دفاع؛ بدوی","سقوط دعوای تجدیدنظر پیش از دفاع","سقوط دعوای تجدیدنظر پس از دفاع"});
             String oldDisposition=previous(prior,"disposition","ORDINARY");
             for(int i=0;i<CalculationTariff.Disposition.values().length;i++)if(CalculationTariff.Disposition.values()[i].name().equals(oldDisposition))disposition.setSelection(i);
+            special=pick("حالت ویژه تعرفه",new String[]{"عادی؛ بدون حالت ویژه","سازش یا داوری منتهی به رأی؛ کل دعوا","سهم مساوی هر وکیل؛ بدون قرارداد و توافق متفاوت","چند اتهام؛ مبلغ مبنا برای جرم اشد","تخصص؛ گواهی کانون یا مرکز در حدود صلاحیت"});
+            String oldSpecial=previous(prior,"tariffSpecial","NONE");
+            for(int i=0;i<CalculationTariff.Special.values().length;i++)if(CalculationTariff.Special.values()[i].name().equals(oldSpecial))special.setSelection(i);
             prosecutor=confirm("در مسیر کیفری، پرونده مرحله دادسرا دارد");prosecutor.setChecked(Boolean.parseBoolean(previous(prior,"hasProsecutor","true")));
             finalTrial=confirm("در مسیر کیفری، رأی بدوی قطعی است");finalTrial.setChecked(Boolean.parseBoolean(previous(prior,"finalTrial","false")));
             supported=confirm("انطباق این دسته و نسخه تعرفه را بررسی کرده‌ام؛ این محاسبه فاقد عوامل ویژه پشتیبانی‌نشده است");
-            a.page.addView(a.info("دامنه محاسبه","حکم قطعی از حیث بها، سایر قرارها، تخصص، تعدد وکلا یا جرایم، تسخیری/معاضدتی، سازش و تغییر وکیل در این مسیر محاسبه نمی‌شوند. چهار قرار مشخص ماده ۱۲ از فهرست نتیجه دادرسی قابل انتخاب‌اند؛ مرحله باید منطبق باشد. در تعرفه بازه‌ای، مبلغ کل منتخب را با دلیل وارد کنید."));
+            a.page.addView(a.info("دامنه محاسبه","حکم قطعی از حیث بها، سایر قرارها، تسخیری/معاضدتی و تغییر وکیل هنوز پشتیبانی نمی‌شوند. حالت‌های ویژه فهرست مستقل‌اند؛ ترکیب چند حالت ویژه با هم یا با قرار پشتیبانی نمی‌شود. برای سازش مرحله کل را انتخاب کنید. در تعدد وکلا نتیجه سهم هر وکیل است. چهار قرار مشخص ماده ۱۲ از فهرست نتیجه دادرسی قابل انتخاب‌اند؛ مرحله باید منطبق باشد. در تعرفه بازه‌ای، مبلغ کل منتخب را با دلیل وارد کنید."));
             TextView bounds=a.txt("",12,a.MUTED);a.page.addView(bounds);
             category.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener(){
                 public void onNothingSelected(AdapterView<?> p){}
@@ -267,7 +270,9 @@ final class CalculationUi {
                         " تا "+CalculationArithmetic.display(r.maximum,CalculationArithmetic.Currency.RIAL)+"؛ ماده "+r.article);
                 }
             });
-        }else{category=null;stage=null;disposition=null;supported=null;prosecutor=null;finalTrial=null;}
+        }else{category=null;stage=null;disposition=null;special=null;supported=null;prosecutor=null;finalTrial=null;}
+        EditText specialCount=tariff?field("تعداد وکلا یا اتهام‌ها؛ در سایر حالت‌ها ۱",previous(prior,"specialCount","1")):null;
+        EditText specialBasis=tariff?field("مستند شرایط حالت ویژه",previous(prior,"specialBasis","")):null;
         EditText award=tariff?field("محکوم‌به یا مورد اجرا؛ فقط دسته اجرای احکام، با واحد انتخابی",previous(prior,"enforcementAward","")):null;
         EditText quantity=tariff?field("ساعت مشاوره؛ در سایر دسته‌ها عدد ۱",previous(prior,"quantity","1")):null;
         button("محاسبه و نمایش نتیجه",()->{
@@ -300,6 +305,12 @@ final class CalculationUi {
                     CalculationTariff.Disposition dispositionValue=CalculationTariff.Disposition.values()[disposition.getSelectedItemPosition()];
                     inputs.put("disposition",dispositionValue.name());
                     r=CalculationTariff.disposition(rules,r,id,dispositionValue);
+                    CalculationTariff.Special specialValue=CalculationTariff.Special.values()[special.getSelectedItemPosition()];
+                    int count=CalculationArithmetic.decimal(specialCount.getText().toString()).intValueExact();
+                    String proof=specialBasis.getText().toString();
+                    r=CalculationTariff.special(rules,r,id,specialValue,count,proof,dispositionValue);
+                    inputs.put("tariffSpecial",specialValue.name());inputs.put("specialCount",Integer.toString(count));inputs.put("specialBasis",proof);
+                    inputs.put("resultScope",specialValue==CalculationTariff.Special.EQUAL_COUNSEL?"سهم هر وکیل":"حق‌الوکاله مسیر انتخابی");
                     money=r.rials;steps.addAll(r.steps);results.put("کسر دقیق ریالی",r.exactRials);
                     warnings.add("بر پایه متن بررسی‌شده تعرفه مصوب ۱۳۹۸ و فرض انتخابی؛ بررسی همه تغییرات بعدی و موارد خاص تکمیل نشده است. این نتیجه حکم دادگاه یا تعیین مبلغ قابل وصول از طرف مقابل نیست.");
                     engine=CalculationTariff.ENGINE_VERSION;legal=rules.version;data=rules.version;

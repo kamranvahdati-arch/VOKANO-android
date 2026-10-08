@@ -59,6 +59,9 @@ final class CalculationReport {
     }
     private static String label(String key){
         switch(key){
+            case "tariffSpecial":return "حالت ویژه تعرفه";case "specialCount":return "تعداد وکلا یا اتهام‌ها";
+            case "specialBasis":return "مستند شرایط حالت ویژه";case "resultScope":return "دامنه مبلغ نتیجه";
+            case "disposition":return "نوع نتیجه دادرسی";
             case "indexPack":return "بسته شاخص منتخب";case "indexSeries":return "سری و سال پایه شاخص";
             case "basePercent":return "درصد مبنای عادی نفس";case "deathDate":return "تاریخ فوت";
             case "actMonth":return "ماه حرام رفتار";case "deathMonth":return "ماه حرام فوت";

@@ -15,9 +15,10 @@ import java.util.Properties;
  * Adoption date is metadata, NOT an inferred effective date.
  */
 final class CalculationTariff {
-    static final String ENGINE_VERSION = "tariff-math/3";
+    static final String ENGINE_VERSION = "tariff-math/4";
     enum Stage { WHOLE, FIRST, APPEAL, CIVIL_CASSATION, PROSECUTOR }
     enum Disposition { ORDINARY, ANNUL_BEFORE_DEFENSE, REJECT_AFTER_DEFENSE, APPEAL_DROP_BEFORE_DEFENSE, APPEAL_DROP_AFTER_DEFENSE }
+    enum Special { NONE, SETTLEMENT, EQUAL_COUNSEL, MULTIPLE_CHARGES, CERTIFIED_SPECIALTY }
     enum Family { CIVIL, CRIMINAL, SERVICE }
 
     static final class Band {
@@ -48,6 +49,7 @@ final class CalculationTariff {
     static final class Rules {
         final String version, sourceUrl, sourceTitle, adoptionDate, reviewDate, serializedRules;
         final Map<Disposition, CalculationArithmetic.Fraction> dispositions;
+        final Map<Special, CalculationArithmetic.Fraction> specialFactors;
         final List<Band> bands;
         final Map<String, Range> ranges;
         final CalculationArithmetic.Fraction civilFirst, civilAppeal;
@@ -89,6 +91,13 @@ final class CalculationTariff {
                 }
             }
             dispositions=Collections.unmodifiableMap(ds);
+            Map<Special, CalculationArithmetic.Fraction> sf=new LinkedHashMap<>();
+            for(Special special:Special.values())if(special!=Special.NONE&&p.containsKey("special."+special.name())) {
+                CalculationArithmetic.Fraction factor=percent(p,"special."+special.name());
+                if(factor.numerator.signum()<=0)throw invalid("ضریب ویژه باید مثبت باشد");
+                sf.put(special,factor);
+            }
+            specialFactors=Collections.unmodifiableMap(sf);
             civilFirst = percent(p, "civil.first"); civilAppeal = percent(p, "civil.appeal");
             criminalProsecutor = percent(p, "criminal.prosecutor");
             criminalFirst = percent(p, "criminal.first"); criminalAppeal = percent(p, "criminal.appeal");
@@ -234,6 +243,51 @@ final class CalculationTariff {
         List<String> steps=new ArrayList<>(base.steps);
         steps.add("ماده ۱۲؛ "+selected.name()+": مبلغ دقیق مرحله "+exact+" × "+factor+"؛ گرد کردن فقط در پایان");
         return new Result(rules,base.article+"/12",base.stage,exact.multiply(factor),base.selectedBasis,steps,base.rounding);
+    }
+
+    /** Explicit independent special pathways. Eligibility is documented, never inferred.
+     * Preserve the unrounded base; no compound charge increments or repeated stage split. */
+    static Result special(Rules rules, Result base, String category, Special special,
+            int count, String evidence, Disposition disposition) {
+        if(rules==null||base==null||special==null||disposition==null)throw invalid("اطلاعات حالت ویژه کامل نیست");
+        if(!rules.version.equals(base.ruleVersion))throw invalid("نسخه مبنا و حالت ویژه متفاوت است");
+        if(special==Special.NONE) {
+            if(count!=1)throw invalid("بدون حالت تعدد، تعداد باید یک باشد");
+            return base;
+        }
+        String proof=CalculationReference.required(evidence,"مستند شرایط حالت ویژه");
+        if(disposition!=Disposition.ORDINARY)throw invalid("ترکیب حالت ویژه با قرار در این مسیر بررسی نشده است");
+        CalculationArithmetic.Fraction factor=rules.specialFactors.get(special);
+        if(factor==null)throw invalid("بسته تاریخی فاقد این حالت ویژه است");
+        Range range=rules.ranges.get(category);
+        boolean litigation="FINANCIAL".equals(category)||(range!=null&&range.family!=Family.SERVICE);
+        if(!litigation)throw invalid("این حالت ویژه برای خدمت مستقل قابل انتخاب نیست");
+        String article;
+        switch(special) {
+            case SETTLEMENT:
+                if(base.stage!=Stage.WHOLE||count!=1)throw invalid("سازش موضوع ماده ۲۳ نیازمند مرحله کل و تعداد یک است");
+                article="23";break;
+            case EQUAL_COUNSEL:
+                if(count<2)throw invalid("تعداد وکلا باید دست‌کم دو باشد");
+                factor=factor.multiply(CalculationArithmetic.Fraction.of(1,count));
+                article="5";break;
+            case MULTIPLE_CHARGES:
+                if(range==null||range.family!=Family.CRIMINAL||count<2)
+                    throw invalid("تعدد اتهام نیازمند دسته جرم اشد و دست‌کم دو اتهام است");
+                factor=CalculationArithmetic.Fraction.of(1,1).add(factor.multiply(CalculationArithmetic.Fraction.of((long)count-1,1)));
+                article="14-note3";break;
+            case CERTIFIED_SPECIALTY:
+                if(count!=1)throw invalid("در تخصص تعداد باید یک باشد");
+                factor=CalculationArithmetic.Fraction.of(1,1).add(factor);
+                article="22-note";break;
+            default:throw invalid("حالت ویژه ناشناخته است");
+        }
+        List<String> steps=new ArrayList<>(base.steps);
+        steps.add("حالت ویژه "+special+"؛ ماده "+article+"؛ مبنای مستند: "+proof);
+        steps.add("مبلغ دقیق مبنا "+base.exactAmount+" × "+factor+"؛ گرد کردن فقط در پایان");
+        if(special==Special.EQUAL_COUNSEL)steps.add("نتیجه سهم هر وکیل است؛ بدون قرارداد حق‌الوکاله و بدون توافق متفاوت در تقسیم. کسر دقیق، مبنای تقسیم است؛ جمع ارقام گرد‌شده ممکن است اختلاف جزئی داشته باشد.");
+        if(special==Special.MULTIPLE_CHARGES)steps.add("مبلغ مبنا تعرفه جرم اشد؛ افزایش برای هر اتهام اضافه نسبت به همان مبنا و غیرمرکب است.");
+        return new Result(rules,base.article+"/"+article,base.stage,base.exactAmount.multiply(factor),base.selectedBasis,steps,base.rounding);
     }
 
     static long agreedFee(String amount, CalculationArithmetic.Currency currency) {

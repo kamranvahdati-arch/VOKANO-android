@@ -131,6 +131,32 @@ public final class CalculationTariffGoldenTest {
         rejects(()->CalculationTariff.disposition(v2,financial(v2,500000000,CalculationTariff.Stage.FIRST),"FINANCIAL",CalculationTariff.Disposition.ANNUL_BEFORE_DEFENSE));
         rejects(()->CalculationTariff.disposition(v2,firstStage,"FINANCIAL",CalculationTariff.Disposition.ANNUL_BEFORE_DEFENSE));
         check(financial(v2,500000000,CalculationTariff.Stage.FIRST).rials==24000000);
+        // Source goldens: whole civil 40m, per-counsel 40m/3, specialty 44m.
+        CalculationTariff.Result whole=financial(r,500000000,CalculationTariff.Stage.WHOLE);
+        check(CalculationTariff.special(r,whole,"FINANCIAL",CalculationTariff.Special.SETTLEMENT,1,BASIS,CalculationTariff.Disposition.ORDINARY).rials==40000000);
+        check(CalculationTariff.special(r,whole,"FINANCIAL",CalculationTariff.Special.EQUAL_COUNSEL,3,BASIS,CalculationTariff.Disposition.ORDINARY).exactRials.equals("40000000/3"));
+        check(CalculationTariff.special(r,whole,"FINANCIAL",CalculationTariff.Special.EQUAL_COUNSEL,3,BASIS,CalculationTariff.Disposition.ORDINARY).rials==13333333);
+        check(CalculationTariff.special(r,whole,"FINANCIAL",CalculationTariff.Special.CERTIFIED_SPECIALTY,1,BASIS,CalculationTariff.Disposition.ORDINARY).rials==44000000);
+        CalculationTariff.Result criminal=range(r,"CRIMINAL_TWO_GRADE6",10000000,"1",CalculationTariff.Stage.FIRST,true,false);
+        check(CalculationTariff.special(r,criminal,"CRIMINAL_TWO_GRADE6",CalculationTariff.Special.MULTIPLE_CHARGES,3,BASIS,CalculationTariff.Disposition.ORDINARY).rials==4200000);
+        for(int n=2;n<=20;n++) {
+            CalculationTariff.Result result=CalculationTariff.special(r,criminal,"CRIMINAL_TWO_GRADE6",CalculationTariff.Special.MULTIPLE_CHARGES,n,BASIS,CalculationTariff.Disposition.ORDINARY);
+            check(result.rials==3000000L+600000L*(n-1));
+        }
+        // 32*.08/2=1.28 rounds to 1, whereas premature base rounding gives 1.5 => 2.
+        check(CalculationTariff.special(r,financial(r,32,CalculationTariff.Stage.WHOLE),"FINANCIAL",CalculationTariff.Special.EQUAL_COUNSEL,2,BASIS,CalculationTariff.Disposition.ORDINARY).rials==1);
+        rejects(()->CalculationTariff.special(r,firstStage,"FINANCIAL",CalculationTariff.Special.SETTLEMENT,1,BASIS,CalculationTariff.Disposition.ORDINARY));
+        rejects(()->CalculationTariff.special(r,whole,"FINANCIAL",CalculationTariff.Special.EQUAL_COUNSEL,1,BASIS,CalculationTariff.Disposition.ORDINARY));
+        rejects(()->CalculationTariff.special(r,whole,"FINANCIAL",CalculationTariff.Special.MULTIPLE_CHARGES,2,BASIS,CalculationTariff.Disposition.ORDINARY));
+        rejects(()->CalculationTariff.special(r,whole,"FINANCIAL",CalculationTariff.Special.CERTIFIED_SPECIALTY,2,BASIS,CalculationTariff.Disposition.ORDINARY));
+        rejects(()->CalculationTariff.special(r,whole,"FINANCIAL",CalculationTariff.Special.CERTIFIED_SPECIALTY,1,"",CalculationTariff.Disposition.ORDINARY));
+        rejects(()->CalculationTariff.special(r,whole,"FINANCIAL",CalculationTariff.Special.EQUAL_COUNSEL,2,BASIS,CalculationTariff.Disposition.REJECT_AFTER_DEFENSE));
+        rejects(()->CalculationTariff.special(r,whole,"FINANCIAL",CalculationTariff.Special.NONE,0,"",CalculationTariff.Disposition.ORDINARY));
+        rejects(()->CalculationTariff.special(r,range(r,"FILE_STUDY",2000000,"1",CalculationTariff.Stage.WHOLE,true,false),"FILE_STUDY",CalculationTariff.Special.SETTLEMENT,1,BASIS,CalculationTariff.Disposition.ORDINARY));
+        CalculationTariff.Rules v3=new CalculationTariff.Rules(Files.newBufferedReader(Paths.get("app/src/main/assets/calculation/tariff-1398-reviewed-v3.properties"),StandardCharsets.UTF_8));
+        rejects(()->CalculationTariff.special(v3,financial(v3,500000000,CalculationTariff.Stage.WHOLE),"FINANCIAL",CalculationTariff.Special.CERTIFIED_SPECIALTY,1,BASIS,CalculationTariff.Disposition.ORDINARY));
+        rejects(()->CalculationTariff.special(v3,whole,"FINANCIAL",CalculationTariff.Special.NONE,1,"",CalculationTariff.Disposition.ORDINARY));
+        check(CalculationTariff.special(r,whole,"FINANCIAL",CalculationTariff.Special.NONE,1,"",CalculationTariff.Disposition.ORDINARY)==whole);
         System.out.println("CalculationTariffGoldenTest: " + assertions + " assertions passed (limited tariff coverage)");
     }
 }
