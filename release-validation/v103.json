@@ -1,0 +1,41 @@
+{
+  "source_commit": "2712341d53e4b4f4306e9035e69d8de771f5157c",
+  "build_run": 37805257515,
+  "certificate_sha256": "26055f09370416e9cd61c08246b80c57367470cdb6873e282b5b6521cf097202",
+  "status": "validation-candidate-not-final-scope-completion",
+  "archive": {
+    "name": "candidate.zip",
+    "bytes": 6953473,
+    "sha256": "41890053ec973baa71aeea138499dd83caab5272f90f58fea0c9437009f6c7d5",
+    "blobs": [
+      "fddaae9b6ef5d9397d162134a103b378b3eb0eba",
+      "168f32668ccba882d5b7c9a2066ee65738e756b9",
+      "a13e5a496eb7196974ff0bf328f140344d767b9d",
+      "9d83a0ae4b88987448cddf1dc50359381fbaddb9",
+      "40c75e6687d51d6911c3bf58112bfea4f0027b29",
+      "08ed850e51d8efadcbede184c530a149d776aa10",
+      "c2420596f5fddcaa14f15acca5cfb3e609de3482",
+      "06bf5ab26a0e9fded7c1c4b06a51114b0f4b7698",
+      "c618b2cb1b011ce34a4c64bb06949143823d78a3",
+      "4550c3284b42f7175af021b88864351f222d3d6b",
+      "1ee280b568873829afcca83ff8a11cd676548abe",
+      "1565dcd8bd21fdec2155146f77300b7495b81d53",
+      "0fa07e9c7d766a954368b216c4f69b98bbca6929",
+      "f8ec9d40e5831cd8a370879d74ec5c7cb34138a4",
+      "2dc40d45c25d9a3cd78ac326f569b827048751b1",
+      "ab8739bffcbf4eff52c87ee914b5215ca3ac9d17",
+      "83e74fd1aa7b2ca6ceb3f7be84e25068aaf61f24",
+      "ab08dcc8585d41b61cad1c0616f5e9e6bcae0246",
+      "1b1dee3766c69b4951ea0d07cec1b45f55503268",
+      "49d1e45646e5c2a5f0f060fd2b5580c17603cc86",
+      "fd7ea417a7a95c5b80c41efa09720f2ef68f5a55",
+      "e6d37bb87161f161eba69f4f58f02a3e22240d81",
+      "a350329a4a11be63b1299cc2c864511a9d15d021",
+      "8f78e315aa33e23de776e952efedf3f65a00cd11",
+      "b0544fd00efc2f863f5d90ce2937e2f16ded813c",
+      "64b27a6f277252819dbdc8af2a8a06e65c6f3bab",
+      "97174e3962d5f8eb601d08eee4e1d39d2b88d455",
+      "8bc4645b373488cb79347c3bd7ec32f9fff16f91"
+    ]
+  }
+}
