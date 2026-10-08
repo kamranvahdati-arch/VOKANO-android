@@ -43,6 +43,7 @@ public class UiFlowSmokeTest {
             try {
                 instrumentation.waitForIdleSync();
                 assertNotNull(activity.page);assertEquals(View.LAYOUT_DIRECTION_RTL,activity.root.getLayoutDirection());
+                instrumentation.runOnMainSync(activity::enterApplication);instrumentation.waitForIdleSync();
                 capture(instrumentation,activity,theme+"-dashboard");
                 for(Runnable screen:new Runnable[]{activity::settings,activity::casesHub,activity::reports,activity::contact,()->activity.appointmentList(null),()->activity.deadlineList(null)}){
                     instrumentation.runOnMainSync(screen);instrumentation.waitForIdleSync();assertTrue(activity.page.getChildCount()>0);

@@ -67,3 +67,17 @@ republications: 812 distinguishes cheque-date accrual from ordinary demand rules
 separate from case reports and the prosecutor's submissions. Eligibility,
 partial payments, insolvency/bankruptcy and other special cases remain to be
 implemented/reviewed; the current UI continues to block final delay calculation.
+
+## Entry implementation continuation — 2026-10-08
+
+Implemented a themed, scrollable branded entry screen with the existing approved
+logo, entry and registration actions. Initial registration retains stored fields.
+An already complete profile is never replaced by the registration action. Entry
+checks the existing optional password/biometric lock before exposing office
+content. No menu appears on the entry or initial-registration screen. Back from
+initial registration returns to entry. OTP remains a future public-release gate;
+no phone-verification or live-account claim is introduced. Existing theme colors
+and font assets are reused without introducing a font-licensing dependency.
+A new API30/35 test covers light/dark rendering, stored-field preservation,
+registration routing, completed profiles and hidden content under the lock.
+This increment awaits Android CI and screenshot inspection.
