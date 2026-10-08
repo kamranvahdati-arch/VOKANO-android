@@ -430,3 +430,22 @@ special-tariff coverage; dependable current index data; complete Android tests
 for this changed tree; final metadata bump and same-certificate signed upgrade.
 No final 10.3 claim is made by this checkpoint. First next action: publish this
 changed candidate on the authorized codex/v10.3 branch and inspect its actual CI.
+
+### Death candidate verified; current official indexes acquired
+
+Published death candidate 3826d66c331f8c590dfcb13ff3dab8d71dbf1d3f matches local
+f5b7717 tree 2802af99c4ef0cb4ca41ec2986b13d44003e148d. CI run 37798998711
+completed SUCCESS in foundation/API30/API35, including new death UI, revision,
+backup and existing installed-upgrade regressions. Earlier prescribed-injury
+candidate 665785f also passed all three jobs in run 37798179583.
+
+The current-index retrieval blocker is resolved: direct official CBI PDF now
+provides 66 values from 1400/01 through 1405/06 (base1400). Added an immutable
+separate pack and explicit UI pack selection, preserving the old base1395 pack,
+reference IDs and saved reports. All 66 values match independently extracted
+PDF cells and visual review. New 81 numerical checks PASS; existing delay 26
+and historical 57 PASS after shared selection integration. A new Android
+future-month/revision/source-provenance/backup test is pending CI for this tree.
+No database/signing/version change. Do not mistake prior-candidate success for
+this new tree's test result. Remaining release gates are unsupported special
+legal paths and final production metadata/signature/installed upgrade validation.

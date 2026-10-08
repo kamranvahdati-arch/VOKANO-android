@@ -59,6 +59,7 @@ final class CalculationReport {
     }
     private static String label(String key){
         switch(key){
+            case "indexPack":return "بسته شاخص منتخب";case "indexSeries":return "سری و سال پایه شاخص";
             case "basePercent":return "درصد مبنای عادی نفس";case "deathDate":return "تاریخ فوت";
             case "actMonth":return "ماه حرام رفتار";case "deathMonth":return "ماه حرام فوت";
             case "actMecca":return "حرم مکه؛ رفتار";case "deathMecca":return "حرم مکه؛ فوت";

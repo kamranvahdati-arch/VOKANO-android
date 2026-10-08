@@ -21,7 +21,7 @@ public class CalculationUiTest {
         final String[] original={null};
         try{ins.runOnMainSync(()->{try{
             original[0]=a.db.exportJson();OfficeCalculations repo=new OfficeCalculations(a.db);int before=repo.list(null).size();
-            CalculationUi ui=new CalculationUi(a);ui.center(null);click(a.page,"خسارت تأخیر تأدیه");
+            CalculationUi ui=new CalculationUi(a);ui.center(null);click(a.page,"خسارت تأخیر تأدیه");selectItem(a.page,"تاریخی؛ پایه ۱۳۹۵، سال‌های ۱۳۹۹ تا ۱۴۰۱");
             input(a.page,"اصل دین؛ بدون خسارت قبلی").setText("۲۲۹۹۰۰۰");
             input(a.page,"تاریخ سررسید / تاریخ مندرج در چک").setText("1399/01/01");
             input(a.page,"تاریخ مطالبه؛ الزامی برای دین عادی").setText("1399/01/01");
@@ -43,6 +43,29 @@ public class CalculationUiTest {
             CalculationSnapshot next=repo.list(null).get(0);assertEquals(first.id,next.previousSnapshotId);assertFalse(next.overrides.isEmpty());
             assertEquals("15,886,000 ریال",next.resultSnapshot.get("اصل و خسارت"));
             String backup=a.db.exportJson();a.db.importJson(backup);assertEquals("7,943,000 ریال",repo.get(first.id).resultSnapshot.get("اصل و خسارت"));
+        }catch(Exception e){throw new AssertionError(e);}});ins.waitForIdleSync();}
+        finally{ins.runOnMainSync(()->{try{if(original[0]!=null)a.db.importJson(original[0]);}catch(Exception e){throw new AssertionError(e);}finally{a.finish();}});ins.waitForIdleSync();}
+    }
+    @Test public void currentOfficialIndicesPreserveSeriesAndHistory()throws Exception{
+        Instrumentation ins=InstrumentationRegistry.getInstrumentation();Context c=ins.getTargetContext();
+        MainActivity a=(MainActivity)ins.startActivitySync(new Intent(c,MainActivity.class).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK|Intent.FLAG_ACTIVITY_CLEAR_TASK));ins.waitForIdleSync();final String[] original={null};
+        try{ins.runOnMainSync(()->{try{
+            original[0]=a.db.exportJson();OfficeCalculations repo=new OfficeCalculations(a.db);new CalculationUi(a).delay(null);
+            input(a.page,"اصل دین؛ بدون خسارت قبلی").setText("6153000");
+            input(a.page,"تاریخ سررسید / تاریخ مندرج در چک").setText("1405/01/01");input(a.page,"تاریخ مطالبه؛ الزامی برای دین عادی").setText("1405/01/01");
+            input(a.page,"مبدأ حقوقی بررسی‌شده").setText("1405/01/01");input(a.page,"تاریخ پرداخت / پایان محاسبه").setText("1405/07/01");
+            input(a.page,"مستند انتخاب مبدأ و احراز شرایط").setText("Official CBI fixture");confirmDelay(a.page);
+            click(a.page,"محاسبه و نمایش نتیجه");assertNull(findText(a.page,"ذخیره محاسبه"));
+            input(a.page,"تاریخ پرداخت / پایان محاسبه").setText("1405/06/31");click(a.page,"محاسبه و نمایش نتیجه");click(a.page,"ذخیره محاسبه");
+            CalculationSnapshot first=repo.list(null).get(0);assertEquals("8,000,000 ریال",first.resultSnapshot.get("اصل و خسارت"));
+            assertEquals("CURRENT1400",first.inputSnapshot.get("indexPack"));assertEquals(CalculationCurrentIndices.VERSION,first.dataVersion);
+            for(CalculationReference r:first.references){assertEquals(CalculationReference.Status.OFFICIAL_VERIFIED,r.status);assertEquals(CalculationCurrentIndices.SERIES,r.series);}
+            assertTrue(CalculationReport.text(first).contains(CalculationCurrentIndices.URL));
+            click(a.page,"نسخه جدید / محاسبه مجدد");input(a.page,"تاریخ پرداخت / پایان محاسبه").setText("1405/05/31");
+            input(a.page,"علت تغییر نسبت به نسخه قبلی").setText("corrected payment month");confirmDelay(a.page);click(a.page,"محاسبه و نمایش نتیجه");click(a.page,"ذخیره محاسبه");
+            CalculationSnapshot next=repo.list(null).get(0);assertEquals(first.id,next.previousSnapshotId);assertEquals("7,703,000 ریال",next.resultSnapshot.get("اصل و خسارت"));
+            a.db.importJson(a.db.exportJson());assertEquals("8,000,000 ریال",repo.get(first.id).resultSnapshot.get("اصل و خسارت"));
+            assertEquals(CalculationCurrentIndices.SERIES,repo.get(next.id).references.get(0).series);
         }catch(Exception e){throw new AssertionError(e);}});ins.waitForIdleSync();}
         finally{ins.runOnMainSync(()->{try{if(original[0]!=null)a.db.importJson(original[0]);}catch(Exception e){throw new AssertionError(e);}finally{a.finish();}});ins.waitForIdleSync();}
     }

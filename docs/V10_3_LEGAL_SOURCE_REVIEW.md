@@ -325,3 +325,27 @@ reviewed by the lawyer, not guessed from Gregorian/Jalali conversion. Article
 oracle that enumerates all completions of unknown facts. Ordinary full 1405
 base 21bn IRR yields 28bn when applicable; documented 50% base yields 14bn.
 Historical source status remains explicit; current-consolidation not claimed.
+
+### Official CBI current index source acquired — 2026-10-08
+
+The official CBI index directory /simplelist/1611.aspx links year 1405 to
+/simplelist/35118.aspx and Shahrivar to https://cbi.ir/page/36186.aspx. Despite
+web reader errors, an ordinary HTTPS GET returns application/pdf (204935 bytes),
+SHA256 8042052dbb7436850028be5e599476f756b50e1e387d7e4f71ccb68e5ac73ebb.
+Printed pages 5-6 (PDF pages 6-7) contain 66 monthly index levels, Farvardin
+1400 through Shahrivar 1405, all with base 1400=100. Every cell was visually
+read and independently compared with Poppler extraction. The footer expressly
+warns of basket differences between bases 1395 and 1400. These series must NOT
+be mixed or mechanically spliced, even for overlapping years. The old 36-cell
+facsimile remains intact, and old snapshots remain associated with that series.
+
+New pack uses OFFICIAL_VERIFIED for provenance of these directly received
+numbers, not a certification of legal entitlement or comprehensive exceptions.
+The sourceDate field records the reporting period end (1405/06/31), explicitly
+explained in reference notes; precise publication date is not invented. UI
+requires a single explicitly selected pack for both endpoints. It defaults to
+the new official pack; historical revisions retain their original selection.
+There is no latest-month substitution or extrapolation beyond Shahrivar 1405.
+Source-derived golden: 6,153,000 IRR at 615.3 to 800.0 => 8,000,000 adjusted,
+1,847,000 damages. 81 new checks include all reference periods, future-month
+rejection, two modes, no same-month damages and cross-basket rejection.
