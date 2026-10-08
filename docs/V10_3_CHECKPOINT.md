@@ -449,3 +449,31 @@ future-month/revision/source-provenance/backup test is pending CI for this tree.
 No database/signing/version change. Do not mistake prior-candidate success for
 this new tree's test result. Remaining release gates are unsupported special
 legal paths and final production metadata/signature/installed upgrade validation.
+
+### Continuation — explicit civil dispositions, 2026-10-08
+
+Verified remote HEAD 408403614ad68409c3d004b586f476616e8487fd matches local
+candidate tree e23e232086ff093dfa66d8180901f3accceaad1e. Its CI run
+37800475809 completed SUCCESS. Preserved all previous work and resumed here.
+Added immutable tariff v3 pack for the four explicit article-12 timing branches:
+first-stage annulment before defense / rejection after defense and appeal
+extinguishment before / after defense. Exact stage amount is multiplied before
+rounding. Unsupported categories and incompatible stages are rejected. Old packs
+remain unchanged. Inputs and rule snapshot preserve disposition and revision.
+Tariff suite: 96 checks PASS. New Android persistence/revision/backup check added;
+Android CI for this changed tree remains pending. No version/schema/signing change.
+Remaining scope: broader tariff exceptions and injury combinations; final release
+metadata, permanently signed APK, actual production upgrade and final API30/35 gates.
+
+### Publication gate — 2026-10-08
+
+Implementation commit: 6579c9f9329281a8a1c62549b93bda96534cbeb5, local only.
+Push to origin HEAD:codex/v10.3 was rejected by automatic approval review:
+explicit authorization to export code/docs to that GitHub destination required.
+No alternate publication route attempted. Await owner approval for this specific
+push before publishing or triggering changed-tree CI. Last verified remote is
+408403614ad68409c3d004b586f476616e8487fd. Local tree passes diff whitespace checks.
+Foundation: 65 PASS via java com.sun.tools.javac.Main (javac launcher absent).
+Tariff: 96 PASS. Android test added but not executed for this tree; no final APK.
+Next action: authorized push, inspect changed-tree API30/35 CI, then remaining
+special-case scope and final production release gates described above.

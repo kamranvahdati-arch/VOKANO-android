@@ -222,6 +222,40 @@ public class CalculationUiTest {
         }catch(Exception e){throw new AssertionError(e);}});ins.waitForIdleSync();}
         finally{ins.runOnMainSync(()->{try{if(original[0]!=null)a.db.importJson(original[0]);}catch(Exception e){throw new AssertionError(e);}finally{a.finish();}});ins.waitForIdleSync();}
     }
+    @Test public void civilDispositionPreservesExactStageAndRevision()throws Exception{
+        Instrumentation ins=InstrumentationRegistry.getInstrumentation();Context c=ins.getTargetContext();
+        MainActivity a=(MainActivity)ins.startActivitySync(new Intent(c,MainActivity.class).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK|Intent.FLAG_ACTIVITY_CLEAR_TASK));ins.waitForIdleSync();
+        final String[] original={null};
+        try{ins.runOnMainSync(()->{try{
+            original[0]=a.db.exportJson();OfficeCalculations repo=new OfficeCalculations(a.db);
+            int before=repo.list(null).size();CalculationUi ui=new CalculationUi(a);ui.fee(true,null);
+            selectItem(a.page,"بدوی");
+            selectItem(a.page,"ابطال دادخواست پیش از دفاع؛ بدوی");
+            input(a.page,"بهای خواسته مالی یا مبلغ منتخب کل تعرفه در سایر دسته‌ها").setText("500000000");
+            input(a.page,"تاریخ مبنای محاسبه").setText("1405/01/01");
+            input(a.page,"توضیح مستند انتخاب مبلغ و مبنا").setText("Article 12 first-stage annulment before defense fixture");
+            ((CheckBox)findText(a.page,"انطباق این دسته و نسخه تعرفه را بررسی کرده‌ام؛ این محاسبه فاقد عوامل ویژه پشتیبانی‌نشده است")).setChecked(true);
+            click(a.page,"محاسبه و نمایش نتیجه");click(a.page,"ذخیره محاسبه");
+            CalculationSnapshot first=repo.list(null).get(0);assertEquals(before+1,repo.list(null).size());
+            assertEquals("6,000,000 ریال",first.resultSnapshot.get("مبلغ"));
+            assertEquals("ANNUL_BEFORE_DEFENSE",first.inputSnapshot.get("disposition"));
+            assertTrue(first.inputSnapshot.get("_rulePackSnapshot").contains("disposition.ANNUL_BEFORE_DEFENSE=25"));
+            assertTrue(CalculationReport.text(first).contains("ماده ۱۲"));
+            click(a.page,"نسخه جدید / محاسبه مجدد");
+            assertEquals("500000000",input(a.page,"بهای خواسته مالی یا مبلغ منتخب کل تعرفه در سایر دسته‌ها").getText().toString());
+            selectItem(a.page,"تجدیدنظر");
+            input(a.page,"علت تغییر نسبت به نسخه قبلی").setText("incompatible stage then corrected disposition");
+            ((CheckBox)findText(a.page,"انطباق این دسته و نسخه تعرفه را بررسی کرده‌ام؛ این محاسبه فاقد عوامل ویژه پشتیبانی‌نشده است")).setChecked(true);
+            click(a.page,"محاسبه و نمایش نتیجه");assertEquals(before+1,repo.list(null).size());
+            assertNotNull(input(a.page,"بهای خواسته مالی یا مبلغ منتخب کل تعرفه در سایر دسته‌ها"));
+            selectItem(a.page,"سقوط دعوای تجدیدنظر پس از دفاع");
+            click(a.page,"محاسبه و نمایش نتیجه");click(a.page,"ذخیره محاسبه");
+            CalculationSnapshot next=repo.list(null).get(0);assertEquals(first.id,next.previousSnapshotId);
+            assertEquals("8,000,000 ریال",next.resultSnapshot.get("مبلغ"));
+            a.db.importJson(a.db.exportJson());assertEquals("6,000,000 ریال",repo.get(first.id).resultSnapshot.get("مبلغ"));
+        }catch(Exception e){throw new AssertionError(e);}});ins.waitForIdleSync();}
+        finally{ins.runOnMainSync(()->{try{if(original[0]!=null)a.db.importJson(original[0]);}catch(Exception e){throw new AssertionError(e);}finally{a.finish();}});ins.waitForIdleSync();}
+    }
     @Test public void prescribedHeadScheduleRetainsSourceAndRevises()throws Exception{
         Instrumentation ins=InstrumentationRegistry.getInstrumentation();Context c=ins.getTargetContext();
         MainActivity a=(MainActivity)ins.startActivitySync(new Intent(c,MainActivity.class).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK|Intent.FLAG_ACTIVITY_CLEAR_TASK));ins.waitForIdleSync();

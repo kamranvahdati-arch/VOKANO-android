@@ -15,8 +15,9 @@ import java.util.Properties;
  * Adoption date is metadata, NOT an inferred effective date.
  */
 final class CalculationTariff {
-    static final String ENGINE_VERSION = "tariff-math/2";
+    static final String ENGINE_VERSION = "tariff-math/3";
     enum Stage { WHOLE, FIRST, APPEAL, CIVIL_CASSATION, PROSECUTOR }
+    enum Disposition { ORDINARY, ANNUL_BEFORE_DEFENSE, REJECT_AFTER_DEFENSE, APPEAL_DROP_BEFORE_DEFENSE, APPEAL_DROP_AFTER_DEFENSE }
     enum Family { CIVIL, CRIMINAL, SERVICE }
 
     static final class Band {
@@ -46,6 +47,7 @@ final class CalculationTariff {
 
     static final class Rules {
         final String version, sourceUrl, sourceTitle, adoptionDate, reviewDate, serializedRules;
+        final Map<Disposition, CalculationArithmetic.Fraction> dispositions;
         final List<Band> bands;
         final Map<String, Range> ranges;
         final CalculationArithmetic.Fraction civilFirst, civilAppeal;
@@ -75,6 +77,18 @@ final class CalculationTariff {
             }
             if (previous != Long.MAX_VALUE) throw invalid("پوشش پله آخر ناقص است");
             bands = Collections.unmodifiableList(values);
+            Map<Disposition, CalculationArithmetic.Fraction> ds = new LinkedHashMap<>();
+            for(Disposition d:Disposition.values()) {
+                if(d==Disposition.ORDINARY)continue;
+                String key="disposition."+d.name();
+                if(p.containsKey(key)) {
+                    CalculationArithmetic.Fraction f=percent(p,key);
+                    if(f.numerator.signum()<=0||f.numerator.compareTo(f.denominator)>0)
+                        throw invalid("ضریب قرار باید مثبت و حداکثر یک باشد");
+                    ds.put(d,f);
+                }
+            }
+            dispositions=Collections.unmodifiableMap(ds);
             civilFirst = percent(p, "civil.first"); civilAppeal = percent(p, "civil.appeal");
             criminalProsecutor = percent(p, "criminal.prosecutor");
             criminalFirst = percent(p, "criminal.first"); criminalAppeal = percent(p, "criminal.appeal");
@@ -112,6 +126,7 @@ final class CalculationTariff {
 
     static final class Result {
         final String ruleVersion, sourceUrl, sourceTitle, article, exactRials, selectedBasis;
+        final CalculationArithmetic.Fraction exactAmount;
         final Stage stage;
         final long rials;
         final RoundingMode rounding;
@@ -119,6 +134,7 @@ final class CalculationTariff {
         Result(Rules rules, String article, Stage stage, CalculationArithmetic.Fraction exact,
                 String selectedBasis, List<String> steps, RoundingMode rounding) {
             ruleVersion = rules.version; sourceUrl = rules.sourceUrl; sourceTitle = rules.sourceTitle;
+            this.exactAmount = exact;
             this.article = article; this.stage = stage; this.exactRials = exact.toString();
             this.selectedBasis = selectedBasis; this.rounding = rounding;
             rials = exact.roundedRials(rounding);
@@ -200,6 +216,24 @@ final class CalculationTariff {
         steps.add("ماده ۲۵: حداقل "+rules.enforcementMinimum+" ریال؛ سقف دقیق "+awardRials+" × "+rules.enforcementMaximumRate+" = "+upper+" ریال");
         steps.add("مبلغ منتخب مستند در بازه: "+selectedRials+" ریال؛ سقف به‌طور خودکار حق‌الوکاله تلقی نشده است");
         return new Result(rules,"25",stage,CalculationArithmetic.Fraction.of(selectedRials,1),basis,steps,rounding);
+    }
+
+    /** Article 12's four explicit timing branches. Do not infer an order from a generic dismissal.
+     * Apply to the exact stage result before its final monetary rounding. */
+    static Result disposition(Rules rules, Result base, String category, Disposition selected) {
+        if(rules==null||base==null||selected==null)throw invalid("اطلاعات قرار کامل نیست");
+        if(!rules.version.equals(base.ruleVersion))throw invalid("نسخه مبنا و قرار متفاوت است");
+        if(selected==Disposition.ORDINARY)return base;
+        if(!("FINANCIAL".equals(category)||"FAMILY".equals(category)||"NONFINANCIAL".equals(category)))
+            throw invalid("این مسیر قرار فقط برای دعوای مالی، خانواده یا غیرمالی دادگاه حقوقی است");
+        boolean appeal=selected==Disposition.APPEAL_DROP_BEFORE_DEFENSE||selected==Disposition.APPEAL_DROP_AFTER_DEFENSE;
+        if(base.stage!=(appeal?Stage.APPEAL:Stage.FIRST))throw invalid("مرحله انتخابی با نوع قرار منطبق نیست");
+        CalculationArithmetic.Fraction factor=rules.dispositions.get(selected);
+        if(factor==null)throw invalid("بسته تاریخی فاقد قاعده این قرار است");
+        CalculationArithmetic.Fraction exact=base.exactAmount;
+        List<String> steps=new ArrayList<>(base.steps);
+        steps.add("ماده ۱۲؛ "+selected.name()+": مبلغ دقیق مرحله "+exact+" × "+factor+"؛ گرد کردن فقط در پایان");
+        return new Result(rules,base.article+"/12",base.stage,exact.multiply(factor),base.selectedBasis,steps,base.rounding);
     }
 
     static long agreedFee(String amount, CalculationArithmetic.Currency currency) {

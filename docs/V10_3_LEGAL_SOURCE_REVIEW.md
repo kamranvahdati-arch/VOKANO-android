@@ -349,3 +349,15 @@ There is no latest-month substitution or extrapolation beyond Shahrivar 1405.
 Source-derived golden: 6,153,000 IRR at 615.3 to 800.0 => 8,000,000 adjusted,
 1,847,000 damages. 81 new checks include all reference periods, future-month
 rejection, two modes, no same-month damages and cross-basket rejection.
+
+### Article 12 timing branches — 2026-10-08 continuation
+
+Rechecked https://icbar.ir/DYN/21/آیین_نامه_تعرفه_حق_الوكاله_حق_المشاوره_و_هزینه_سفر
+against the existing article register. Qavanin currently returns an interstitial;
+no new current-consolidation claim. Four explicit pre/post-defense orders use
+25%/50% of the first or appeal stage, not whole-case fee. Implemented only for
+civil financial, family and nonfinancial categories; no automatic classification,
+no extension to administrative/criminal/service categories. Four 500m-IRR claim
+fixtures yield 6m/12m first-stage and 4m/8m appeal amounts. The 41-IRR synthetic
+boundary (.492 IRR) verifies that intermediate rounding cannot change the result.
+Other article-12 branches and combinations remain outside this increment.

@@ -111,6 +111,26 @@ public final class CalculationTariffGoldenTest {
         CalculationTariff.Rules old = new CalculationTariff.Rules(new StringReader(data.replace("enforcement.minimum=4000000", "").replace("enforcement.maximum.percent=2", "")));
         check(financial(old,500000000,CalculationTariff.Stage.WHOLE).rials==40000000);
         rejects(()->CalculationTariff.enforcement(old,1000000000,4000000,CalculationTariff.Stage.WHOLE,BASIS,ROUND));
+        CalculationTariff.Result firstStage=financial(r,500000000,CalculationTariff.Stage.FIRST);
+        CalculationTariff.Result appealStage=financial(r,500000000,CalculationTariff.Stage.APPEAL);
+        check(CalculationTariff.disposition(r,firstStage,"FINANCIAL",CalculationTariff.Disposition.ANNUL_BEFORE_DEFENSE).rials==6000000);
+        check(CalculationTariff.disposition(r,firstStage,"FINANCIAL",CalculationTariff.Disposition.REJECT_AFTER_DEFENSE).rials==12000000);
+        check(CalculationTariff.disposition(r,appealStage,"FINANCIAL",CalculationTariff.Disposition.APPEAL_DROP_BEFORE_DEFENSE).rials==4000000);
+        check(CalculationTariff.disposition(r,appealStage,"FINANCIAL",CalculationTariff.Disposition.APPEAL_DROP_AFTER_DEFENSE).rials==8000000);
+        check(CalculationTariff.disposition(r,firstStage,"FINANCIAL",CalculationTariff.Disposition.ORDINARY)==firstStage);
+        // 31 * .08 * .60 / 4 = .372 => 0, not round(1.488)/4.
+        check(CalculationTariff.disposition(r,financial(r,31,CalculationTariff.Stage.FIRST),"FINANCIAL",CalculationTariff.Disposition.ANNUL_BEFORE_DEFENSE).rials==0);
+        // 41*.08*.6/4=.492 => 0; rounding the stage first would incorrectly give 1.
+        check(CalculationTariff.disposition(r,financial(r,41,CalculationTariff.Stage.FIRST),"FINANCIAL",CalculationTariff.Disposition.ANNUL_BEFORE_DEFENSE).rials==0);
+        rejects(()->CalculationTariff.disposition(r,firstStage,"FINANCIAL",CalculationTariff.Disposition.APPEAL_DROP_AFTER_DEFENSE));
+        rejects(()->CalculationTariff.disposition(r,appealStage,"FINANCIAL",CalculationTariff.Disposition.ANNUL_BEFORE_DEFENSE));
+        rejects(()->CalculationTariff.disposition(r,firstStage,"ADMINISTRATIVE",CalculationTariff.Disposition.ANNUL_BEFORE_DEFENSE));
+        rejects(()->CalculationTariff.disposition(r,firstStage,"CRIMINAL_TWO_GRADE6",CalculationTariff.Disposition.ANNUL_BEFORE_DEFENSE));
+        rejects(()->CalculationTariff.disposition(r,financial(r,1,CalculationTariff.Stage.WHOLE),"FINANCIAL",CalculationTariff.Disposition.ANNUL_BEFORE_DEFENSE));
+        CalculationTariff.Rules v2=new CalculationTariff.Rules(Files.newBufferedReader(Paths.get("app/src/main/assets/calculation/tariff-1398-reviewed-v2.properties"),StandardCharsets.UTF_8));
+        rejects(()->CalculationTariff.disposition(v2,financial(v2,500000000,CalculationTariff.Stage.FIRST),"FINANCIAL",CalculationTariff.Disposition.ANNUL_BEFORE_DEFENSE));
+        rejects(()->CalculationTariff.disposition(v2,firstStage,"FINANCIAL",CalculationTariff.Disposition.ANNUL_BEFORE_DEFENSE));
+        check(financial(v2,500000000,CalculationTariff.Stage.FIRST).rials==24000000);
         System.out.println("CalculationTariffGoldenTest: " + assertions + " assertions passed (limited tariff coverage)");
     }
 }
