@@ -360,3 +360,34 @@ calculation candidate's Android verification, preserving the owner's sequence.
 Owner explicitly approved publishing these changes to the named public GitHub
 repository/branch on 2026-10-08. Resume publication and candidate CI. This
 evidence update intentionally enables CI for the changed application tree.
+
+## Continuation — 2026-10-08, execution tariff and release identity
+
+Resumed remote e5adf97a9ea570c9813ad02ed7f01bac8eee2a3a in an isolated worktree;
+older local continuation/74cc2ec has identical tree and was preserved. Direct
+GitHub run 37709801916 is SUCCESS for foundation and API30/API35. API30 proof
+was opened: upgrade and entry tests passed; light/dark entry screenshots reviewed.
+The welcome actions touched with no gap and lacked primary/secondary distinction;
+this increment adds theme-aware filled/outlined actions and 12dp separation.
+
+Added the missing article-25 civil/official-document enforcement tariff path.
+The official Qavanin text was retrieved again on 2026-10-08 (same source ID as
+prior review). It specifies an interval; selected fee is never automatically
+set to the ceiling. Exact ceiling checks precede rounding; contradictory bounds
+are rejected for separate assessment. A new v2 asset preserves the v1 pack,
+records the enforcement constants, and corrects the civil-order label to بند ج.
+Immutable snapshots retain award, selection reason, rule pack and revision.
+Local tariff test: 81 assertions PASS (13 additional boundary/history checks).
+New Android save/revise/bounds/backup test added; changed-candidate CI pending.
+No schema/version/application ID change. Existing 10.2/15, schema16 retained.
+
+Original permanent signing recovery was found in the owner's stored artifacts
+and decrypted privately. Recovered certificate matches the previously recorded
+26055f09370416e9cd61c08246b80c57367470cdb6873e282b5b6521cf097202.
+No new key created; no secret in source/log/artifact. Permanent signing access
+is no longer the blocker in this session; final candidate signing/testing remains.
+
+Still incomplete: current/historical index coverage beyond 1399–1401; prescribed
+injury and taghliz/combination paths; other special tariff cases; final signed
+candidate and actual production-APK upgrade verification. Do not call the
+bounded four-form development app a completed 10.3 release.

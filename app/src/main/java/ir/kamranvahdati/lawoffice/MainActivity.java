@@ -40,8 +40,8 @@ public class MainActivity extends Activity {
     root.getChildAt(0).setVisibility(View.GONE);page.setGravity(Gravity.CENTER);page.setPadding(dp(24),dp(32),dp(24),dp(32));
     ImageView brand=new ImageView(this);brand.setImageResource(dark?R.drawable.vokano_icon_dark:R.drawable.vokano_icon_light);brand.setScaleType(ImageView.ScaleType.FIT_CENTER);brand.setContentDescription("نشان وکانو");page.addView(brand,lp(dp(144),dp(144)));
     for(String line:new String[]{"وکانو","VOKANO","سامانه هوشمند وکلای نوین","دسترسی ساده‌تر به عدالت"}){TextView label=txt(line,line.equals("وکانو")?32:line.equals("VOKANO")?20:15,INK);label.setGravity(Gravity.CENTER);label.setPadding(0,dp(8),0,dp(8));page.addView(label,lp(-1,-2));}
-    TextView enter=action("ورود به اپلیکیشن");enter.setGravity(Gravity.CENTER);enter.setOnClickListener(v->enterApplication());page.addView(enter,lp(-1,-2));
-    TextView register=action("ثبت‌نام وکیل");register.setGravity(Gravity.CENTER);register.setBackground(round(CARD,18));register.setTextColor(INK);register.setOnClickListener(v->{if(profileReady())toast("مشخصات قبلاً ثبت شده است؛ ورود به اپلیکیشن را انتخاب کنید");else enterApplication();});page.addView(register,lp(-1,-2));
+    TextView enter=action("ورود به اپلیکیشن");enter.setGravity(Gravity.CENTER);enter.setBackground(round(NAVY,18));enter.setTextColor(ON_PRIMARY);enter.setOnClickListener(v->enterApplication());page.addView(enter,lp(-1,-2));
+    TextView register=action("ثبت‌نام وکیل");register.setGravity(Gravity.CENTER);GradientDrawable entryOutline=round(CARD,18);entryOutline.setStroke(dp(1),BLUE);register.setBackground(entryOutline);register.setTextColor(INK);register.setOnClickListener(v->{if(profileReady())toast("مشخصات قبلاً ثبت شده است؛ ورود به اپلیکیشن را انتخاب کنید");else enterApplication();});LinearLayout.LayoutParams registerLayout=lp(-1,-2);registerLayout.topMargin=dp(12);page.addView(register,registerLayout);
     TextView footer=txt("همراه هوشمند وکلای حرفه‌ای",12,MUTED);footer.setGravity(Gravity.CENTER);footer.setPadding(0,dp(28),0,0);page.addView(footer,lp(-1,-2));
   }
   void enterApplication(){

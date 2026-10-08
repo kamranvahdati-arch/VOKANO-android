@@ -154,7 +154,7 @@ final class CalculationUi {
         a.clear(tariff?"حق‌الوکاله تعرفه‌ای":"حق‌الوکاله توافقی","ورودی‌ها را بررسی کنید؛ ثبت محاسبه مبلغ پرونده یا قرارداد را تغییر نمی‌دهد");
         a.detailBack=()->center(related);
         final CalculationTariff.Rules rules;
-        try(InputStreamReader reader=new InputStreamReader(a.getAssets().open("calculation/tariff-1398-reviewed.properties"),StandardCharsets.UTF_8)){
+        try(InputStreamReader reader=new InputStreamReader(a.getAssets().open("calculation/tariff-1398-reviewed-v2.properties"),StandardCharsets.UTF_8)){
             rules=new CalculationTariff.Rules(reader);
         }catch(Exception e){a.toast(message(e));return;}
         EditText title=field("عنوان محاسبه",prior==null?(tariff?"محاسبه تعرفه":"حق‌الوکاله توافقی"):prior.title);
@@ -173,7 +173,7 @@ final class CalculationUi {
         EditText reason=prior==null?null:field("علت تغییر نسبت به نسخه قبلی","");
         final List<String> ids=new ArrayList<>();final Spinner category,stage;final CheckBox supported,prosecutor,finalTrial;
         if(tariff){
-            ids.add("FINANCIAL");ids.addAll(rules.ranges.keySet());List<String> labels=new ArrayList<>();labels.add("مالی؛ پلکانی ماده ۹، غیرقطعی از حیث بها");
+            ids.add("FINANCIAL");ids.add("CIVIL_ENFORCEMENT");ids.addAll(rules.ranges.keySet());List<String> labels=new ArrayList<>();labels.add("مالی؛ پلکانی ماده ۹، غیرقطعی از حیث بها");labels.add("اجرای احکام حقوقی و اسناد رسمی؛ ماده ۲۵");
             for(CalculationTariff.Range r:rules.ranges.values())labels.add(r.label);
             category=pick("دسته تعرفه",labels.toArray(new String[0]));
             int index=ids.indexOf(previous(prior,"category","FINANCIAL"));category.setSelection(Math.max(0,index));
@@ -189,12 +189,13 @@ final class CalculationUi {
                 public void onNothingSelected(AdapterView<?> p){}
                 public void onItemSelected(AdapterView<?> p,View v,int position,long id){
                     CalculationTariff.Range r=rules.ranges.get(ids.get(position));
-                    bounds.setText(r==null?"بهای خواسته را وارد کنید؛ نرخ هر پله جدا اعمال می‌شود.":
+                    bounds.setText("CIVIL_ENFORCEMENT".equals(ids.get(position))?"مبلغ منتخب حق‌الوکاله را در فیلد مبلغ و محکوم‌به را در فیلد جدا وارد کنید؛ حداقل ۴٬۰۰۰٬۰۰۰ ریال و سقف ۲٪ محکوم‌به. مرحله کل و مقدار خدمت ۱ لازم است.":r==null?"بهای خواسته را وارد کنید؛ نرخ هر پله جدا اعمال می‌شود.":
                         "حدود کل تعرفه: "+(r.minimum==null?"حداقل تعیین نشده":CalculationArithmetic.display(r.minimum,CalculationArithmetic.Currency.RIAL))+
                         " تا "+CalculationArithmetic.display(r.maximum,CalculationArithmetic.Currency.RIAL)+"؛ ماده "+r.article);
                 }
             });
         }else{category=null;stage=null;supported=null;prosecutor=null;finalTrial=null;}
+        EditText award=tariff?field("محکوم‌به یا مورد اجرا؛ فقط دسته اجرای احکام، با واحد انتخابی",previous(prior,"enforcementAward","")):null;
         EditText quantity=tariff?field("ساعت مشاوره؛ در سایر دسته‌ها عدد ۱",previous(prior,"quantity","1")):null;
         button("محاسبه و نمایش نتیجه",()->{
             try{
@@ -211,8 +212,8 @@ final class CalculationUi {
                 if(tariff){
                     if(date.compareTo(rules.adoptionDate)<0)throw new IllegalArgumentException("تاریخ مبنا پیش از تصویب این نسخه تعرفه است");
                     String id=ids.get(category.getSelectedItemPosition());CalculationTariff.Stage stageValue=CalculationTariff.Stage.values()[stage.getSelectedItemPosition()];
-                    if("FINANCIAL".equals(id)&&CalculationArithmetic.decimal(quantity.getText().toString()).compareTo(java.math.BigDecimal.ONE)!=0)
-                        throw new IllegalArgumentException("در دسته مالی مقدار خدمت باید ۱ باشد");
+                    if(("FINANCIAL".equals(id)||"CIVIL_ENFORCEMENT".equals(id))&&CalculationArithmetic.decimal(quantity.getText().toString()).compareTo(java.math.BigDecimal.ONE)!=0)
+                        throw new IllegalArgumentException("در دسته مالی و اجرای احکام مقدار خدمت باید ۱ باشد");
                     inputs.put("category",id);inputs.put("stage",stageValue.name());inputs.put("quantity",quantity.getText().toString());
                     boolean criminal=rules.ranges.containsKey(id)&&rules.ranges.get(id).family==CalculationTariff.Family.CRIMINAL;
                     boolean hasProsecutor=!criminal||prosecutor.isChecked(),isFinal=criminal&&finalTrial.isChecked();
@@ -220,7 +221,8 @@ final class CalculationUi {
                     inputs.put("sourceUrl",rules.sourceUrl);inputs.put("sourceTitle",rules.sourceTitle);inputs.put("rulePack",rules.version);
                     inputs.put("sourceAdoptionDate",rules.adoptionDate);inputs.put("sourceReviewDate",rules.reviewDate);
                     inputs.put("_rulePackSnapshot",rules.serializedRules);
-                    CalculationTariff.Result r="FINANCIAL".equals(id)?CalculationTariff.financial(rules,money,stageValue,explanation,false,RoundingMode.HALF_UP):
+                    if("CIVIL_ENFORCEMENT".equals(id))inputs.put("enforcementAward",award.getText().toString());
+                    CalculationTariff.Result r="CIVIL_ENFORCEMENT".equals(id)?CalculationTariff.enforcement(rules,CalculationArithmetic.money(award.getText().toString(),unit),money,stageValue,explanation,RoundingMode.HALF_UP):"FINANCIAL".equals(id)?CalculationTariff.financial(rules,money,stageValue,explanation,false,RoundingMode.HALF_UP):
                         CalculationTariff.ranged(rules,id,money,quantity.getText().toString(),stageValue,hasProsecutor,isFinal,explanation,RoundingMode.HALF_UP);
                     money=r.rials;steps.addAll(r.steps);results.put("کسر دقیق ریالی",r.exactRials);
                     warnings.add("بر پایه متن بررسی‌شده تعرفه مصوب ۱۳۹۸ و فرض انتخابی؛ بررسی همه تغییرات بعدی و موارد خاص تکمیل نشده است. این نتیجه حکم دادگاه یا تعیین مبلغ قابل وصول از طرف مقابل نیست.");

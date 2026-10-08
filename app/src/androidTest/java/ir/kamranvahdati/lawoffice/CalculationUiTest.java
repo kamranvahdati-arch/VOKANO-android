@@ -165,6 +165,45 @@ public class CalculationUiTest {
             }
         }
     }
+    @Test public void enforcementFeePreservesAwardBoundsAndRevision()throws Exception{
+        Instrumentation ins=InstrumentationRegistry.getInstrumentation();Context c=ins.getTargetContext();
+        MainActivity a=(MainActivity)ins.startActivitySync(new Intent(c,MainActivity.class).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK|Intent.FLAG_ACTIVITY_CLEAR_TASK));ins.waitForIdleSync();
+        final String[] original={null};
+        try{ins.runOnMainSync(()->{try{
+            original[0]=a.db.exportJson();OfficeCalculations repo=new OfficeCalculations(a.db);
+            int before=repo.list(null).size();CalculationUi ui=new CalculationUi(a);ui.fee(true,null);
+            selectItem(a.page,"اجرای احکام حقوقی و اسناد رسمی؛ ماده ۲۵");
+            input(a.page,"بهای خواسته مالی یا مبلغ منتخب کل تعرفه در سایر دسته‌ها").setText("12000000");
+            input(a.page,"محکوم‌به یا مورد اجرا؛ فقط دسته اجرای احکام، با واحد انتخابی").setText("1000000000");
+            input(a.page,"تاریخ مبنای محاسبه").setText("1405/01/01");
+            input(a.page,"توضیح مستند انتخاب مبلغ و مبنا").setText("Article 25 independent enforcement fixture");
+            ((CheckBox)findText(a.page,"انطباق این دسته و نسخه تعرفه را بررسی کرده‌ام؛ این محاسبه فاقد عوامل ویژه پشتیبانی‌نشده است")).setChecked(true);
+            click(a.page,"محاسبه و نمایش نتیجه");click(a.page,"ذخیره محاسبه");
+            CalculationSnapshot first=repo.list(null).get(0);assertEquals(before+1,repo.list(null).size());
+            assertEquals("12,000,000 ریال",first.resultSnapshot.get("مبلغ"));
+            assertEquals("1000000000",first.inputSnapshot.get("enforcementAward"));
+            assertTrue(first.inputSnapshot.get("_rulePackSnapshot").contains("enforcement.maximum.percent=2"));
+            assertTrue(CalculationReport.text(first).contains("ماده ۲۵"));
+            click(a.page,"نسخه جدید / محاسبه مجدد");
+            assertEquals("1000000000",input(a.page,"محکوم‌به یا مورد اجرا؛ فقط دسته اجرای احکام، با واحد انتخابی").getText().toString());
+            input(a.page,"بهای خواسته مالی یا مبلغ منتخب کل تعرفه در سایر دسته‌ها").setText("20000001");
+            input(a.page,"علت تغییر نسبت به نسخه قبلی").setText("above exact ceiling");
+            ((CheckBox)findText(a.page,"انطباق این دسته و نسخه تعرفه را بررسی کرده‌ام؛ این محاسبه فاقد عوامل ویژه پشتیبانی‌نشده است")).setChecked(true);
+            click(a.page,"محاسبه و نمایش نتیجه");assertEquals(before+1,repo.list(null).size());
+            assertNotNull(input(a.page,"محکوم‌به یا مورد اجرا؛ فقط دسته اجرای احکام، با واحد انتخابی"));
+            input(a.page,"بهای خواسته مالی یا مبلغ منتخب کل تعرفه در سایر دسته‌ها").setText("20000000");
+            click(a.page,"محاسبه و نمایش نتیجه");click(a.page,"ذخیره محاسبه");
+            CalculationSnapshot next=repo.list(null).get(0);assertEquals(first.id,next.previousSnapshotId);
+            assertEquals("20,000,000 ریال",next.resultSnapshot.get("مبلغ"));
+            a.db.importJson(a.db.exportJson());assertEquals("12,000,000 ریال",repo.get(first.id).resultSnapshot.get("مبلغ"));
+        }catch(Exception e){throw new AssertionError(e);}});ins.waitForIdleSync();}
+        finally{ins.runOnMainSync(()->{try{if(original[0]!=null)a.db.importJson(original[0]);}catch(Exception e){throw new AssertionError(e);}finally{a.finish();}});ins.waitForIdleSync();}
+    }
+    private static boolean selectItem(View v,String label){
+        if(v instanceof Spinner){Spinner spinner=(Spinner)v;for(int i=0;i<spinner.getCount();i++)if(label.equals(spinner.getItemAtPosition(i).toString())){spinner.setSelection(i);return true;}}
+        if(v instanceof ViewGroup)for(int i=0;i<((ViewGroup)v).getChildCount();i++)if(selectItem(((ViewGroup)v).getChildAt(i),label))return true;
+        return false;
+    }
     private static OfficeDb.CaseRecord findCase(OfficeDb db,long id){for(OfficeDb.CaseRecord c:db.cases(null,"همه",null))if(c.id==id)return c;throw new AssertionError("case missing");}
     private static EditText input(View v,String hint){
         if(v instanceof EditText&&hint.contentEquals(((EditText)v).getHint()))return (EditText)v;

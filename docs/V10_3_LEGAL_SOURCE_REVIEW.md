@@ -285,3 +285,15 @@ Ruling 877 republication at daftarvakil.ir/قوانین-و-مصوبات/195484/ 
 It concerns remaining bankruptcy assets and creditor loss, not a generic
 cheque rule. Bankruptcy is explicitly outside this form; no exception engine
 is claimed. Direct Dotic re-fetch failed. Current indices remain unverified.
+
+## Article 25 continuation — 2026-10-08
+
+Re-read official Qavanin record 16814137751518820692, article 25. The independent
+civil enforcement branch is now represented in the v2 data asset and engine:
+4,000,000 IRR minimum and exact 2% award ceiling. Choice within the interval is
+explicit; no automatic maximum. Where the ceiling is below the minimum the
+engine rejects instead of inventing precedence. Service uses WHOLE, with no
+60/40 stage allocation. Source-derived examples: award 200,000,000 => a single
+4,000,000 bound; award 1,000,000,000 => 4,000,000–20,000,000. At 200,000,049,
+4,000,001 exceeds the exact 4,000,000.98 ceiling and is rejected before rounding.
+This does not resolve remaining special tariff interactions or current indexes.

@@ -15,7 +15,7 @@ import java.util.Properties;
  * Adoption date is metadata, NOT an inferred effective date.
  */
 final class CalculationTariff {
-    static final String ENGINE_VERSION = "tariff-math/1";
+    static final String ENGINE_VERSION = "tariff-math/2";
     enum Stage { WHOLE, FIRST, APPEAL, CIVIL_CASSATION, PROSECUTOR }
     enum Family { CIVIL, CRIMINAL, SERVICE }
 
@@ -49,6 +49,8 @@ final class CalculationTariff {
         final List<Band> bands;
         final Map<String, Range> ranges;
         final CalculationArithmetic.Fraction civilFirst, civilAppeal;
+        final Long enforcementMinimum;
+        final CalculationArithmetic.Fraction enforcementMaximumRate;
         final CalculationArithmetic.Fraction criminalProsecutor, criminalFirst, criminalAppeal;
 
         Rules(Reader reader) throws IOException {
@@ -88,6 +90,13 @@ final class CalculationTariff {
                 if (rs.put(id, range) != null) throw invalid("شناسه تعرفه تکراری است");
             }
             ranges = Collections.unmodifiableMap(rs);
+            // Old historical snapshots remain readable; absence never guesses a new rule.
+            boolean hasMin=p.containsKey("enforcement.minimum"), hasRate=p.containsKey("enforcement.maximum.percent");
+            if(hasMin!=hasRate)throw invalid("بسته اجرای احکام ناقص است");
+            enforcementMinimum=hasMin?Long.valueOf(required(p,"enforcement.minimum")):null;
+            enforcementMaximumRate=hasRate?percent(p,"enforcement.maximum.percent"):null;
+            if(hasMin&&(enforcementMinimum<=0||enforcementMaximumRate.numerator.signum()==0))
+                throw invalid("حدود اجرای احکام باید مثبت باشد");
         }
 
         private static String required(Properties p, String key) {
@@ -171,6 +180,26 @@ final class CalculationTariff {
         steps.add("مبلغ انتخابی مستند: " + selectedWholeRials + " ریال؛ مقدار خدمت " + q + "؛ سهم مرحله " + s);
         if (range.minimum == null) steps.add("این ماده فقط سقف دارد؛ حداقل قانونی در این بسته تعیین نشده است");
         return new Result(rules, range.article, stage, exact, basis, steps, rounding);
+    }
+
+    /** Article 25: an interval, NOT an automatic 2% fee. Selection must fit the
+     * exact upper bound before rounding. Contradictory bounds require legal review. */
+    static Result enforcement(Rules rules, long awardRials, long selectedRials,
+            Stage stage, String applicabilityBasis, RoundingMode rounding) {
+        require(rules, stage, rounding);
+        String basis=CalculationReference.required(applicabilityBasis,"مبنای انتخاب مبلغ اجرای احکام");
+        if(stage!=Stage.WHOLE)throw invalid("امور اجرایی در این مسیر خدمت مستقل است؛ مرحله کل را انتخاب کنید");
+        if(rules.enforcementMinimum==null)throw invalid("بسته تاریخی فاقد قاعده اجرای احکام است");
+        if(awardRials<=0)throw invalid("مبلغ محکوم‌به یا مورد اجرا باید مثبت باشد");
+        CalculationArithmetic.Fraction upper=CalculationArithmetic.Fraction.of(awardRials,1).multiply(rules.enforcementMaximumRate);
+        if(java.math.BigInteger.valueOf(rules.enforcementMinimum).multiply(upper.denominator).compareTo(upper.numerator)>0)
+            throw invalid("سقف درصدی کمتر از حداقل تعرفه است؛ تعیین مبلغ نیازمند بررسی حقوقی مستقل است");
+        if(selectedRials<rules.enforcementMinimum||java.math.BigInteger.valueOf(selectedRials).multiply(upper.denominator).compareTo(upper.numerator)>0)
+            throw invalid("مبلغ منتخب خارج از حدود دقیق تعرفه اجرای احکام است");
+        List<String> steps=new ArrayList<>();
+        steps.add("ماده ۲۵: حداقل "+rules.enforcementMinimum+" ریال؛ سقف دقیق "+awardRials+" × "+rules.enforcementMaximumRate+" = "+upper+" ریال");
+        steps.add("مبلغ منتخب مستند در بازه: "+selectedRials+" ریال؛ سقف به‌طور خودکار حق‌الوکاله تلقی نشده است");
+        return new Result(rules,"25",stage,CalculationArithmetic.Fraction.of(selectedRials,1),basis,steps,rounding);
     }
 
     static long agreedFee(String amount, CalculationArithmetic.Currency currency) {

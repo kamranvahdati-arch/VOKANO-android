@@ -96,6 +96,21 @@ public final class CalculationTariffGoldenTest {
         check(financial(r,500000000,CalculationTariff.Stage.WHOLE).rials == 40000000);
         try { new CalculationTariff.Rules(new StringReader(data.replace("civil.first=60", "civil.first=61"))); throw new AssertionError("bad shares"); }
         catch (IllegalArgumentException expected) { assertions++; }
+        check(CalculationTariff.enforcement(r,200000000,4000000,CalculationTariff.Stage.WHOLE,BASIS,ROUND).rials==4000000);
+        check(CalculationTariff.enforcement(r,1000000000,12000000,CalculationTariff.Stage.WHOLE,BASIS,ROUND).rials==12000000);
+        check(CalculationTariff.enforcement(r,200000049,4000000,CalculationTariff.Stage.WHOLE,BASIS,ROUND).rials==4000000);
+        // A 4,000,000.98 ceiling may not be rounded up to admit 4,000,001.
+        rejects(()->CalculationTariff.enforcement(r,200000049,4000001,CalculationTariff.Stage.WHOLE,BASIS,ROUND));
+        rejects(()->CalculationTariff.enforcement(r,199999999,4000000,CalculationTariff.Stage.WHOLE,BASIS,ROUND));
+        rejects(()->CalculationTariff.enforcement(r,1000000000,20000001,CalculationTariff.Stage.WHOLE,BASIS,ROUND));
+        rejects(()->CalculationTariff.enforcement(r,1000000000,3999999,CalculationTariff.Stage.WHOLE,BASIS,ROUND));
+        rejects(()->CalculationTariff.enforcement(r,0,4000000,CalculationTariff.Stage.WHOLE,BASIS,ROUND));
+        rejects(()->CalculationTariff.enforcement(r,1000000000,4000000,CalculationTariff.Stage.FIRST,BASIS,ROUND));
+        rejects(()->CalculationTariff.enforcement(r,1000000000,4000000,CalculationTariff.Stage.WHOLE,"",ROUND));
+        check(CalculationTariff.enforcement(r,Long.MAX_VALUE,4000000,CalculationTariff.Stage.WHOLE,BASIS,ROUND).rials==4000000);
+        CalculationTariff.Rules old = new CalculationTariff.Rules(new StringReader(data.replace("enforcement.minimum=4000000", "").replace("enforcement.maximum.percent=2", "")));
+        check(financial(old,500000000,CalculationTariff.Stage.WHOLE).rials==40000000);
+        rejects(()->CalculationTariff.enforcement(old,1000000000,4000000,CalculationTariff.Stage.WHOLE,BASIS,ROUND));
         System.out.println("CalculationTariffGoldenTest: " + assertions + " assertions passed (limited tariff coverage)");
     }
 }
