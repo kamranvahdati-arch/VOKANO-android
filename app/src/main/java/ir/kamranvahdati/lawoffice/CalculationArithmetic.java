@@ -96,6 +96,13 @@ final class CalculationArithmetic {
                     denominator.multiply(other.denominator));
         }
 
+        Fraction subtract(Fraction other) {
+            require(other);
+            BigInteger difference=numerator.multiply(other.denominator).subtract(other.numerator.multiply(denominator));
+            if(difference.signum()<0)throw invalid("مبلغ کسرشده از مانده دقیق بیشتر است");
+            return new Fraction(difference,denominator.multiply(other.denominator));
+        }
+
         Fraction multiply(Fraction other) {
             require(other);
             return new Fraction(numerator.multiply(other.numerator), denominator.multiply(other.denominator));

@@ -77,13 +77,20 @@ final class CalculationUi {
         CheckBox money=confirm("دین از نوع وجه رایج ایران است و مبلغ، اصل دین بدون خسارت قبلی است");
         CheckBox ordinary=confirm("در دین عادی، مطالبه، تمکن، امتناع، تغییر فاحش شاخص و نبود مصالحه مغایر را بررسی کرده‌ام");
         CheckBox cheque=confirm("در مسیر چک، شمول قاعده رأی ۸۱۲ و تاریخ مندرج در چک را بررسی کرده‌ام");
+        Spinner paymentsMode=pick("روش پرداخت",new String[]{"پرداخت یک‌جا؛ بدون پرداخت قبلی","پرداخت‌های جزئی مستند از محکوم‌به"});
+        paymentsMode.setSelection("PARTIAL".equals(previous(prior,"paymentMethod","SINGLE"))?1:0);
+        EditText payments=field("پرداخت‌های قبلی؛ هر سطر: تاریخ | مبلغ | مستند",previous(prior,"payments",""));
+        payments.setSingleLine(false);payments.setMinLines(3);
+        CheckBox partialScope=confirm("در پرداخت جزئی، محکومیت به دین با تعدیل ارزش و تخصیص نسبی پرداخت را بررسی کرده‌ام؛ بدون اعسار، تقسیط قضایی، ورشکستگی یا استثنای دیگر");
         CheckBox simple=confirm("پرونده فاقد پرداخت جزئی، اقساط، اعسار، ورشکستگی، وجه التزام یا استثنای مؤثر دیگر است");
-        a.page.addView(a.info("دامنه و منابع","این فرم استحقاق یا مبدأ را خودکار تعیین نمی‌کند. ماده ۵۲۲، قاعده عمومی رأی ۸۱۲ و فرمول رأی ۸۵۰ مبنای بررسی‌اند. موارد خاص پشتیبانی نمی‌شوند. بسته رسمی پایه ۱۴۰۰ تا شهریور ۱۴۰۵ و بسته تاریخی پایه ۱۳۹۵ فقط ۱۳۹۹ تا ۱۴۰۱ را پوشش می‌دهند. شاخص‌های دو سبد قابل اختلاط نیستند؛ ماه فاقد داده تخمین زده نمی‌شود. اصل دین در شاخص پایان تقسیم بر شاخص مبدأ ضرب می‌شود؛ سود مرکب و محاسبه روزشمار اعمال نمی‌شود."));
+        a.page.addView(a.info("دامنه و منابع","این فرم استحقاق یا مبدأ را خودکار تعیین نمی‌کند. ماده ۵۲۲، قاعده عمومی رأی ۸۱۲ و فرمول رأی ۸۵۰ مبنای بررسی‌اند. پرداخت جزئی مسیر مستقل و تأیید شرایط خود را دارد؛ سایر موارد خاص پشتیبانی نمی‌شوند. بسته رسمی پایه ۱۴۰۰ تا شهریور ۱۴۰۵ و بسته تاریخی پایه ۱۳۹۵ فقط ۱۳۹۹ تا ۱۴۰۱ را پوشش می‌دهند. شاخص‌های دو سبد قابل اختلاط نیستند؛ ماه فاقد داده تخمین زده نمی‌شود. اصل دین در شاخص پایان تقسیم بر شاخص مبدأ ضرب می‌شود؛ سود مرکب و محاسبه روزشمار اعمال نمی‌شود."));
         button("محاسبه و نمایش نتیجه",()->{try{
             CalculationDelayMath.Mode selectedMode=mode.getSelectedItemPosition()==0?CalculationDelayMath.Mode.ORDINARY_DEBT:CalculationDelayMath.Mode.CHEQUE;
             String d=CalculationReference.date(due.getText().toString()),s=CalculationReference.date(start.getText().toString()),e=CalculationReference.date(end.getText().toString());
             String demandValue=demand.getText().toString().trim();if(!demandValue.isEmpty())demandValue=CalculationReference.date(demandValue);
-            String explanation=CalculationDelayPack.validateScope(selectedMode,d,demandValue,s,e,basis.getText().toString(),money.isChecked(),ordinary.isChecked(),cheque.isChecked(),simple.isChecked());
+            boolean partial=paymentsMode.getSelectedItemPosition()==1;
+            if(!partial&&!payments.getText().toString().trim().isEmpty())throw new IllegalArgumentException("برای ثبت پرداخت‌های قبلی، روش پرداخت جزئی را انتخاب کنید");
+            String explanation=CalculationDelayPack.validateScope(selectedMode,d,demandValue,s,e,basis.getText().toString(),money.isChecked(),ordinary.isChecked(),cheque.isChecked(),partial?partialScope.isChecked():simple.isChecked());
             CalculationArithmetic.Currency unit=currency.getSelectedItemPosition()==0?CalculationArithmetic.Currency.RIAL:CalculationArithmetic.Currency.TOMAN;
             long principal=CalculationArithmetic.money(amount.getText().toString(),unit);
             boolean current=indexPack.getSelectedItemPosition()==0;CalculationReference first,last;
@@ -101,15 +108,33 @@ final class CalculationUi {
             results.put("خسارت تأخیر",CalculationArithmetic.display(r.damagesRials,CalculationArithmetic.Currency.RIAL));
             results.put("اصل و خسارت",CalculationArithmetic.display(r.adjustedRials,CalculationArithmetic.Currency.RIAL));
             results.put("معادل تومان اصل و خسارت",CalculationArithmetic.display(r.adjustedRials,CalculationArithmetic.Currency.TOMAN));results.put("کسر دقیق ریالی",r.exactAdjustedRials);
-            List<String> steps=Arrays.asList(principal+" × "+last.value+" ÷ "+first.value+" = "+r.exactAdjustedRials+" ریال", "خسارت = مبلغ تعدیل‌شده منهای اصل دین؛ گرد کردن فقط در پایان");
+            List<String> steps=new ArrayList<>(Arrays.asList(principal+" × "+last.value+" ÷ "+first.value+" = "+r.exactAdjustedRials+" ریال", "خسارت = مبلغ تعدیل‌شده منهای اصل دین؛ گرد کردن فقط در پایان"));
             List<String> warnings=Arrays.asList("نتیجه مشروط به صحت بررسی حقوقی کاربر است؛ تعیین استحقاق و مبلغ قابل وصول بر عهده مرجع صالح است. موارد خاص در این مسیر پشتیبانی نمی‌شوند.",current?"شاخص‌ها مستقیم از گزارش رسمی بانک مرکزی دریافت شده‌اند؛ پایه ۱۴۰۰ و پوشش تا شهریور ۱۴۰۵. اتصال به‌روزرسانی زنده وجود ندارد.":"شاخص‌ها از تصویر بازنشرشده جدول بانک مرکزی تطبیق داده شده‌اند؛ پوشش فقط ۱۳۹۹ تا ۱۴۰۱ است. اتصال به‌روزرسانی زنده وجود ندارد.");
+            List<CalculationReference> delayRefs=first.id.equals(last.id)?Collections.singletonList(first):Arrays.asList(first,last);
+            String delayEngine=CalculationDelayMath.ENGINE_VERSION,delayRule="reviewed-simple-delay-522-812-850/1";
+            inputs.put("paymentMethod",partial?"PARTIAL":"SINGLE");
+            if(partial){
+                CalculationPartialPayments.Indices lookup;
+                if(current){CalculationCurrentIndices pack=currentIndices();lookup=pack::at;}
+                else{CalculationDelayPack pack=delayPack();lookup=pack::at;}
+                CalculationPartialPayments.Result paid=CalculationPartialPayments.calculate(selectedMode,principal,s,e,explanation,
+                    CalculationPartialPayments.parse(payments.getText().toString(),unit),lookup,RoundingMode.HALF_UP);
+                inputs.put("payments",payments.getText().toString());inputs.put("scopeConfirmed","پرداخت جزئی از محکوم‌به با تعدیل ارزش؛ فاقد سایر استثناها؛ تأیید مستند توسط کاربر");
+                inputs.put("paymentSource",CalculationPartialPayments.SOURCE);
+                results.clear();results.put("اصل اولیه",CalculationArithmetic.display(principal,CalculationArithmetic.Currency.RIAL));
+                results.put("جمع پرداخت‌های واقعی",CalculationArithmetic.display(paid.paidRials,CalculationArithmetic.Currency.RIAL));
+                results.put("مانده قابل محاسبه",CalculationArithmetic.display(paid.remainingRials,CalculationArithmetic.Currency.RIAL));
+                results.put("خسارت تجمعی تا پایان",CalculationArithmetic.display(paid.totalDamagesRials,CalculationArithmetic.Currency.RIAL));
+                results.put("کسر دقیق مانده ریالی",paid.exactRemaining.toString());
+                steps=new ArrayList<>(paid.steps);delayRefs=paid.references;delayEngine="partial-delay-math/1";delayRule=CalculationPartialPayments.VERSION;
+                warnings=new ArrayList<>(warnings);warnings.add("تخصیص نسبی بر مبنای بند چهارم نظریه مشورتی ۷/۱۴۰۲/۲۲۰، بازنشر بررسی‌شده؛ نظریه مشورتی رأی لازم‌الاتباع نیست. مانده نتیجه، جایگزین مبلغ اصل و خسارت پیش از کسر پرداخت‌هاست.");
+            }
             long now=Math.max(System.currentTimeMillis(),prior==null?0:prior.createdAt+1);List<CalculationSnapshot.Override> audit=new ArrayList<>();
             if(prior!=null){String why=CalculationReference.required(reason.getText().toString(),"علت تغییر");Set<String> keys=new LinkedHashSet<>(prior.inputSnapshot.keySet());keys.addAll(inputs.keySet());for(String key:keys){String old=prior.inputSnapshot.getOrDefault(key,""),value=inputs.getOrDefault(key,"");if(!old.equals(value))audit.add(new CalculationSnapshot.Override(CalculationSnapshot.OverrideType.INPUT,key,old,value,now,why));}}
-            List<CalculationReference> refs=first.id.equals(last.id)?Collections.singletonList(first):Arrays.asList(first,last);
             show(new CalculationSnapshot(UUID.randomUUID().toString(),prior==null?"":prior.id,title.getText().toString(),caseId,
                 selectedMode==CalculationDelayMath.Mode.ORDINARY_DEBT?CalculationSnapshot.Type.ORDINARY_DEBT_DELAY:CalculationSnapshot.Type.CHEQUE_DELAY,
-                CalculationDelayMath.ENGINE_VERSION,"reviewed-simple-delay-522-812-850/1",selectedVersion,JalaliDate.today().value(),e,
-                inputs,results,refs,steps,warnings,audit,RoundingMode.HALF_UP,now,now),false);
+                delayEngine,delayRule,selectedVersion,JalaliDate.today().value(),e,
+                inputs,results,delayRefs,steps,warnings,audit,RoundingMode.HALF_UP,now,now),false);
         }catch(Exception e){a.toast(message(e));}});
     }
     private Spinner finding(String label,CalculationSnapshot prior,String key){

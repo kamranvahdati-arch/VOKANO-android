@@ -59,6 +59,7 @@ final class CalculationReport {
     }
     private static String label(String key){
         switch(key){
+            case "paymentMethod":return "روش پرداخت";case "payments":return "پرداخت‌های مستند";case "paymentSource":return "منبع تخصیص پرداخت";
             case "tariffSpecial":return "حالت ویژه تعرفه";case "specialCount":return "تعداد وکلا یا اتهام‌ها";
             case "specialBasis":return "مستند شرایط حالت ویژه";case "resultScope":return "دامنه مبلغ نتیجه";
             case "disposition":return "نوع نتیجه دادرسی";

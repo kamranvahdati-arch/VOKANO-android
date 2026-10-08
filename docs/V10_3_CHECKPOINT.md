@@ -498,3 +498,13 @@ changed-tree Android build and tests pending. No schema/identity changes.
 Remaining: final-by-value tariff and other special intersections, partial-payment/
 instalment and insolvency delay paths, wider injuries and overlap, and final
 same-key signing plus upgrade validation of the eventual completed tree.
+
+### Partial payments, numerical and Android integration
+
+Published special tariff tree b7c4f32b as remote68fbe508; CI37845322565
+is executing (foundation already SUCCESS). Added partial-payment path with
+82 new checks PASS; previous delay26/historical57/current81 and tariff132
+PASS. Added Android consent/overpayment/revision/backup test; pending CI.
+No schema migration; new input/result keys and references use immutable snapshots.
+Next: publish changed tree and verify Android, then insolvency/instalments,
+remaining tariff/injury coverage and final candidate signing gates.

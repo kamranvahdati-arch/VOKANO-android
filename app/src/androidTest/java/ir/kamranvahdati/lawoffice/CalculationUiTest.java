@@ -69,6 +69,33 @@ public class CalculationUiTest {
         }catch(Exception e){throw new AssertionError(e);}});ins.waitForIdleSync();}
         finally{ins.runOnMainSync(()->{try{if(original[0]!=null)a.db.importJson(original[0]);}catch(Exception e){throw new AssertionError(e);}finally{a.finish();}});ins.waitForIdleSync();}
     }
+    @Test public void partialPaymentsRetainReceiptsIndicesAndRevisions()throws Exception{
+        Instrumentation ins=InstrumentationRegistry.getInstrumentation();Context c=ins.getTargetContext();
+        MainActivity a=(MainActivity)ins.startActivitySync(new Intent(c,MainActivity.class).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK|Intent.FLAG_ACTIVITY_CLEAR_TASK));ins.waitForIdleSync();final String[] original={null};
+        try{ins.runOnMainSync(()->{try{
+            original[0]=a.db.exportJson();OfficeCalculations repo=new OfficeCalculations(a.db);new CalculationUi(a).delay(null);
+            input(a.page,"اصل دین؛ بدون خسارت قبلی").setText("6153000");
+            input(a.page,"تاریخ سررسید / تاریخ مندرج در چک").setText("1405/01/01");input(a.page,"تاریخ مطالبه؛ الزامی برای دین عادی").setText("1405/01/01");
+            input(a.page,"مبدأ حقوقی بررسی‌شده").setText("1405/01/01");input(a.page,"تاریخ پرداخت / پایان محاسبه").setText("1405/06/31");
+            input(a.page,"مستند انتخاب مبدأ و احراز شرایط").setText("judgment allocation fixture");confirmDelay(a.page);
+            selectItem(a.page,"پرداخت‌های جزئی مستند از محکوم‌به");
+            input(a.page,"پرداخت‌های قبلی؛ هر سطر: تاریخ | مبلغ | مستند").setText("1405/02/01 | 3337500 | receipt-one");
+            click(a.page,"محاسبه و نمایش نتیجه");assertNull(findText(a.page,"ذخیره محاسبه"));
+            String consent="در پرداخت جزئی، محکومیت به دین با تعدیل ارزش و تخصیص نسبی پرداخت را بررسی کرده‌ام؛ بدون اعسار، تقسیط قضایی، ورشکستگی یا استثنای دیگر";
+            ((CheckBox)findText(a.page,consent)).setChecked(true);click(a.page,"محاسبه و نمایش نتیجه");click(a.page,"ذخیره محاسبه");
+            CalculationSnapshot first=repo.list(null).get(0);assertEquals("4,000,000 ریال",first.resultSnapshot.get("مانده قابل محاسبه"));
+            assertEquals(3,first.references.size());assertTrue(CalculationReport.text(first).contains("receipt-one"));
+            click(a.page,"نسخه جدید / محاسبه مجدد");confirmDelay(a.page);((CheckBox)findText(a.page,consent)).setChecked(true);
+            input(a.page,"پرداخت‌های قبلی؛ هر سطر: تاریخ | مبلغ | مستند").setText("1405/02/01 | 6675001 | receipt-two");
+            input(a.page,"علت تغییر نسبت به نسخه قبلی").setText("payment correction fixture");click(a.page,"محاسبه و نمایش نتیجه");assertNull(findText(a.page,"ذخیره محاسبه"));
+            input(a.page,"پرداخت‌های قبلی؛ هر سطر: تاریخ | مبلغ | مستند").setText("1405/02/01 | 6675000 | receipt-two");
+            click(a.page,"محاسبه و نمایش نتیجه");click(a.page,"ذخیره محاسبه");
+            CalculationSnapshot next=repo.list(null).get(0);assertEquals(first.id,next.previousSnapshotId);assertEquals("0 ریال",next.resultSnapshot.get("مانده قابل محاسبه"));
+            a.db.importJson(a.db.exportJson());assertEquals("4,000,000 ریال",repo.get(first.id).resultSnapshot.get("مانده قابل محاسبه"));
+            assertEquals(CalculationPartialPayments.VERSION,next.legalBasisVersion);
+        }catch(Exception e){throw new AssertionError(e);}});ins.waitForIdleSync();}
+        finally{ins.runOnMainSync(()->{try{if(original[0]!=null)a.db.importJson(original[0]);}catch(Exception e){throw new AssertionError(e);}finally{a.finish();}});ins.waitForIdleSync();}
+    }
     private static void confirmDelay(View root){
         for(String label:new String[]{"دین از نوع وجه رایج ایران است و مبلغ، اصل دین بدون خسارت قبلی است","در دین عادی، مطالبه، تمکن، امتناع، تغییر فاحش شاخص و نبود مصالحه مغایر را بررسی کرده‌ام","پرونده فاقد پرداخت جزئی، اقساط، اعسار، ورشکستگی، وجه التزام یا استثنای مؤثر دیگر است"})
             ((CheckBox)findText(root,label)).setChecked(true);

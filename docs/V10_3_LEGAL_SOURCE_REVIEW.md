@@ -361,3 +361,19 @@ no extension to administrative/criminal/service categories. Four 500m-IRR claim
 fixtures yield 6m/12m first-stage and 4m/8m appeal amounts. The 41-IRR synthetic
 boundary (.492 IRR) verifies that intermediate rounding cannot change the result.
 Other article-12 branches and combinations remain outside this increment.
+
+### Partial payments continuation — 2026-10-08
+
+Reviewed advisory 7/1402/220 paragraph four in two republications,
+https://vakilan.net/Vots/Show/103569 and the 72-page Mordad1402 collection
+https://dadresi.net/wp-content/uploads/2023/09/نظریات-مشورتی-مردادماه-1402.pdf
+(PDF pages42–44). This is REVIEWED REPUBLICATION, not direct official delivery
+or a binding ruling. Exact allocation implementation indexes the outstanding
+balance to each actual payment date, deducts the payment, and indexes only the
+remaining balance to the next date. No principal-only deduction, fixed-interest
+compounding or interim monetary rounding. Requires a documented judgment and
+lawyer confirmation; insolvency, judicial instalments, bankruptcy and other
+exceptions remain excluded from this specific path. Dates/receipts/all index
+versions and source link are saved. Numerical fixture independently derived:
+6,153,000 at615.3; at667.5 payment3,337,500 leaves3,337,500; at800 remaining4m.
+Accumulated loss is remaining4m + paid3,337,500 − original6,153,000 =1,184,500.
