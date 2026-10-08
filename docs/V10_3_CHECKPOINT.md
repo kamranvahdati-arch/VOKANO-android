@@ -508,3 +508,16 @@ PASS. Added Android consent/overpayment/revision/backup test; pending CI.
 No schema migration; new input/result keys and references use immutable snapshots.
 Next: publish changed tree and verify Android, then insolvency/instalments,
 remaining tariff/injury coverage and final candidate signing gates.
+
+### Judicial insolvency and one overdue instalment
+
+Special tariff CI37845322565 completed SUCCESS on foundation/API30/API35.
+Partial-payment tree86a34444 published as d3d1e52b; CI37845882999 pending.
+Added two explicit independent ruling824 pathways: clamp accrual to the
+judicially established insolvency date, or compute one documented overdue
+instalment from its own due date. No automatic judgment/default determination,
+no automatic combination with partial payments, no claim to bankruptcy coverage.
+Requested/effective dates and the scope of each result are preserved. New
+numerical16 PASS; added Android cutoff/future-report-date/instalment/revision/
+backup test pending. Previous numerical delay suites still pass. Next publish
+this tree and verify CI; then remaining scope and final changed-candidate signing.

@@ -377,3 +377,15 @@ exceptions remain excluded from this specific path. Dates/receipts/all index
 versions and source link are saved. Numerical fixture independently derived:
 6,153,000 at615.3; at667.5 payment3,337,500 leaves3,337,500; at800 remaining4m.
 Accumulated loss is remaining4m + paid3,337,500 − original6,153,000 =1,184,500.
+
+### Ruling824 routes — 2026-10-08
+
+Cross-read https://nezamat.ir/post-44019/ and https://lawlex.ir/vahdat/vahdat-824
+(republications, not a claim of direct official verification). Operative text
+distinguishes the judicially established insolvency date from an application
+and allows damages on each overdue judicial instalment from its due date.
+Implementation keeps these as separate documented scenarios and does not
+silently total them or add earlier damages to an instalment. No future index
+is required when the effective stop precedes the requested report date.
+Court findings, amount and due date are lawyer inputs. Bankruptcy, later altered
+judgments and combinations with partial payments remain unsupported.

@@ -96,6 +96,37 @@ public class CalculationUiTest {
         }catch(Exception e){throw new AssertionError(e);}});ins.waitForIdleSync();}
         finally{ins.runOnMainSync(()->{try{if(original[0]!=null)a.db.importJson(original[0]);}catch(Exception e){throw new AssertionError(e);}finally{a.finish();}});ins.waitForIdleSync();}
     }
+    @Test public void insolvencyCutoffAndSeparateInstalmentKeepEffectiveDates()throws Exception{
+        Instrumentation ins=InstrumentationRegistry.getInstrumentation();Context c=ins.getTargetContext();
+        MainActivity a=(MainActivity)ins.startActivitySync(new Intent(c,MainActivity.class).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK|Intent.FLAG_ACTIVITY_CLEAR_TASK));ins.waitForIdleSync();final String[] original={null};
+        try{ins.runOnMainSync(()->{try{
+            original[0]=a.db.exportJson();OfficeCalculations repo=new OfficeCalculations(a.db);new CalculationUi(a).delay(null);
+            selectItem(a.page,"چک مشمول قاعده عمومی رأی ۸۱۲");selectItem(a.page,"توقف خسارت از تاریخ ثبوت اعسار");
+            input(a.page,"اصل دین؛ بدون خسارت قبلی").setText("6153000");input(a.page,"تاریخ سررسید / تاریخ مندرج در چک").setText("1405/01/01");
+            input(a.page,"مبدأ حقوقی بررسی‌شده").setText("1405/01/01");input(a.page,"تاریخ پرداخت / پایان محاسبه").setText("1405/07/01");
+            input(a.page,"مستند انتخاب مبدأ و احراز شرایط").setText("cheque and judgment fixture");
+            input(a.page,"تاریخ ثبوت اعسار طبق حکم؛ فقط مسیر اعسار یا قسط").setText("1405/05/01");
+            input(a.page,"مشخصات حکم و مستند تاریخ اعسار یا سررسید قسط").setText("established date fixture");
+            ((CheckBox)findText(a.page,"دین از نوع وجه رایج ایران است و مبلغ، اصل دین بدون خسارت قبلی است")).setChecked(true);
+            String consent="حکم و انطباق رأی ۸۲۴ را بررسی کرده‌ام؛ این محاسبه فقط دوره پیش از اعسار یا یک قسط معوق است و پرداخت جزئی، ورشکستگی یا استثنای دیگری ندارد";
+            click(a.page,"محاسبه و نمایش نتیجه");assertNull(findText(a.page,"ذخیره محاسبه"));
+            ((CheckBox)findText(a.page,consent)).setChecked(true);click(a.page,"محاسبه و نمایش نتیجه");click(a.page,"ذخیره محاسبه");
+            CalculationSnapshot first=repo.list(null).get(0);assertEquals("7,703,000 ریال",first.resultSnapshot.get("اصل و خسارت"));
+            assertEquals("1405/05/01",first.inputSnapshot.get("indexedEnd"));assertEquals("1405/07/01",first.effectiveLegalDate);
+            assertTrue(CalculationReport.text(first).contains("بدون خسارت اقساط معوق بعدی"));
+            click(a.page,"نسخه جدید / محاسبه مجدد");selectItem(a.page,"تأخیر یک قسط معوقِ حکم تقسیط");
+            input(a.page,"اصل دین؛ بدون خسارت قبلی").setText("7166000");input(a.page,"تاریخ سررسید / تاریخ مندرج در چک").setText("1405/03/01");
+            input(a.page,"مبدأ حقوقی بررسی‌شده").setText("1405/03/01");input(a.page,"تاریخ پرداخت / پایان محاسبه").setText("1405/06/31");
+            input(a.page,"تاریخ ثبوت اعسار طبق حکم؛ فقط مسیر اعسار یا قسط").setText("1405/02/01");
+            input(a.page,"علت تغییر نسبت به نسخه قبلی").setText("separate overdue instalment scenario");
+            ((CheckBox)findText(a.page,"دین از نوع وجه رایج ایران است و مبلغ، اصل دین بدون خسارت قبلی است")).setChecked(true);((CheckBox)findText(a.page,consent)).setChecked(true);
+            click(a.page,"محاسبه و نمایش نتیجه");click(a.page,"ذخیره محاسبه");
+            CalculationSnapshot next=repo.list(null).get(0);assertEquals(first.id,next.previousSnapshotId);assertEquals("834,000 ریال",next.resultSnapshot.get("خسارت تأخیر"));
+            assertEquals("OVERDUE_INSTALLMENT",next.inputSnapshot.get("paymentMethod"));a.db.importJson(a.db.exportJson());
+            assertEquals("1405/05/01",repo.get(first.id).inputSnapshot.get("indexedEnd"));assertEquals(CalculationDelayExceptions.VERSION,repo.get(next.id).legalBasisVersion);
+        }catch(Exception e){throw new AssertionError(e);}});ins.waitForIdleSync();}
+        finally{ins.runOnMainSync(()->{try{if(original[0]!=null)a.db.importJson(original[0]);}catch(Exception e){throw new AssertionError(e);}finally{a.finish();}});ins.waitForIdleSync();}
+    }
     private static void confirmDelay(View root){
         for(String label:new String[]{"دین از نوع وجه رایج ایران است و مبلغ، اصل دین بدون خسارت قبلی است","در دین عادی، مطالبه، تمکن، امتناع، تغییر فاحش شاخص و نبود مصالحه مغایر را بررسی کرده‌ام","پرونده فاقد پرداخت جزئی، اقساط، اعسار، ورشکستگی، وجه التزام یا استثنای مؤثر دیگر است"})
             ((CheckBox)findText(root,label)).setChecked(true);

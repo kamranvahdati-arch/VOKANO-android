@@ -77,27 +77,34 @@ final class CalculationUi {
         CheckBox money=confirm("دین از نوع وجه رایج ایران است و مبلغ، اصل دین بدون خسارت قبلی است");
         CheckBox ordinary=confirm("در دین عادی، مطالبه، تمکن، امتناع، تغییر فاحش شاخص و نبود مصالحه مغایر را بررسی کرده‌ام");
         CheckBox cheque=confirm("در مسیر چک، شمول قاعده رأی ۸۱۲ و تاریخ مندرج در چک را بررسی کرده‌ام");
-        Spinner paymentsMode=pick("روش پرداخت",new String[]{"پرداخت یک‌جا؛ بدون پرداخت قبلی","پرداخت‌های جزئی مستند از محکوم‌به"});
-        paymentsMode.setSelection("PARTIAL".equals(previous(prior,"paymentMethod","SINGLE"))?1:0);
+        Spinner paymentsMode=pick("روش پرداخت",new String[]{"پرداخت یک‌جا؛ بدون پرداخت قبلی","پرداخت‌های جزئی مستند از محکوم‌به","توقف خسارت از تاریخ ثبوت اعسار","تأخیر یک قسط معوقِ حکم تقسیط"});
+        paymentsMode.setSelection(CalculationDelayExceptions.Route.valueOf(previous(prior,"paymentMethod","SINGLE")).ordinal());
         EditText payments=field("پرداخت‌های قبلی؛ هر سطر: تاریخ | مبلغ | مستند",previous(prior,"payments",""));
         payments.setSingleLine(false);payments.setMinLines(3);
         CheckBox partialScope=confirm("در پرداخت جزئی، محکومیت به دین با تعدیل ارزش و تخصیص نسبی پرداخت را بررسی کرده‌ام؛ بدون اعسار، تقسیط قضایی، ورشکستگی یا استثنای دیگر");
+        EditText insolvencyDate=field("تاریخ ثبوت اعسار طبق حکم؛ فقط مسیر اعسار یا قسط",previous(prior,"insolvencyDate",""));a.bindJalaliPicker(insolvencyDate);
+        EditText judgmentBasis=field("مشخصات حکم و مستند تاریخ اعسار یا سررسید قسط",previous(prior,"judgmentBasis",""));
+        CheckBox exceptionScope=confirm("حکم و انطباق رأی ۸۲۴ را بررسی کرده‌ام؛ این محاسبه فقط دوره پیش از اعسار یا یک قسط معوق است و پرداخت جزئی، ورشکستگی یا استثنای دیگری ندارد");
+        a.page.addView(a.info("اعسار و اقساط معوق","در توقف، تاریخ ثبوت اعسار طبق حکم ملاک است؛ صرف دادخواست کافی نیست. این نتیجه شامل خسارت اقساط معوق پس از حکم نیست. برای هر قسط معوق، مسیر جدا را انتخاب و فقط مبلغ همان قسط و سررسید آن را وارد کنید؛ مبلغ کل حکم و تاریخ چک را جایگزین نکنید. احراز تمکن در حدود قسط و مفاد حکم باید مستند باشد."));
         CheckBox simple=confirm("پرونده فاقد پرداخت جزئی، اقساط، اعسار، ورشکستگی، وجه التزام یا استثنای مؤثر دیگر است");
-        a.page.addView(a.info("دامنه و منابع","این فرم استحقاق یا مبدأ را خودکار تعیین نمی‌کند. ماده ۵۲۲، قاعده عمومی رأی ۸۱۲ و فرمول رأی ۸۵۰ مبنای بررسی‌اند. پرداخت جزئی مسیر مستقل و تأیید شرایط خود را دارد؛ سایر موارد خاص پشتیبانی نمی‌شوند. بسته رسمی پایه ۱۴۰۰ تا شهریور ۱۴۰۵ و بسته تاریخی پایه ۱۳۹۵ فقط ۱۳۹۹ تا ۱۴۰۱ را پوشش می‌دهند. شاخص‌های دو سبد قابل اختلاط نیستند؛ ماه فاقد داده تخمین زده نمی‌شود. اصل دین در شاخص پایان تقسیم بر شاخص مبدأ ضرب می‌شود؛ سود مرکب و محاسبه روزشمار اعمال نمی‌شود."));
+        a.page.addView(a.info("دامنه و منابع","این فرم استحقاق یا مبدأ را خودکار تعیین نمی‌کند. ماده ۵۲۲، قاعده عمومی رأی ۸۱۲ و فرمول رأی ۸۵۰ مبنای بررسی‌اند. پرداخت جزئی، توقف به علت اعسار و یک قسط معوق مسیر مستقل و تأیید شرایط خود را دارند؛ سایر موارد خاص پشتیبانی نمی‌شوند. بسته رسمی پایه ۱۴۰۰ تا شهریور ۱۴۰۵ و بسته تاریخی پایه ۱۳۹۵ فقط ۱۳۹۹ تا ۱۴۰۱ را پوشش می‌دهند. شاخص‌های دو سبد قابل اختلاط نیستند؛ ماه فاقد داده تخمین زده نمی‌شود. اصل دین در شاخص پایان تقسیم بر شاخص مبدأ ضرب می‌شود؛ سود مرکب و محاسبه روزشمار اعمال نمی‌شود."));
         button("محاسبه و نمایش نتیجه",()->{try{
             CalculationDelayMath.Mode selectedMode=mode.getSelectedItemPosition()==0?CalculationDelayMath.Mode.ORDINARY_DEBT:CalculationDelayMath.Mode.CHEQUE;
             String d=CalculationReference.date(due.getText().toString()),s=CalculationReference.date(start.getText().toString()),e=CalculationReference.date(end.getText().toString());
             String demandValue=demand.getText().toString().trim();if(!demandValue.isEmpty())demandValue=CalculationReference.date(demandValue);
-            boolean partial=paymentsMode.getSelectedItemPosition()==1;
+            CalculationDelayExceptions.Route route=CalculationDelayExceptions.Route.values()[paymentsMode.getSelectedItemPosition()];
+            boolean partial=route==CalculationDelayExceptions.Route.PARTIAL;
+            boolean exception=route==CalculationDelayExceptions.Route.INSOLVENCY_STOP||route==CalculationDelayExceptions.Route.OVERDUE_INSTALLMENT;
+            String indexedEnd=CalculationDelayExceptions.indexedEnd(route,selectedMode,d,s,e,insolvencyDate.getText().toString(),judgmentBasis.getText().toString(),exceptionScope.isChecked());
             if(!partial&&!payments.getText().toString().trim().isEmpty())throw new IllegalArgumentException("برای ثبت پرداخت‌های قبلی، روش پرداخت جزئی را انتخاب کنید");
-            String explanation=CalculationDelayPack.validateScope(selectedMode,d,demandValue,s,e,basis.getText().toString(),money.isChecked(),ordinary.isChecked(),cheque.isChecked(),partial?partialScope.isChecked():simple.isChecked());
+            String explanation=CalculationDelayPack.validateScope(selectedMode,d,demandValue,s,e,basis.getText().toString(),money.isChecked(),ordinary.isChecked(),exception?exceptionScope.isChecked():cheque.isChecked(),exception?exceptionScope.isChecked():partial?partialScope.isChecked():simple.isChecked());
             CalculationArithmetic.Currency unit=currency.getSelectedItemPosition()==0?CalculationArithmetic.Currency.RIAL:CalculationArithmetic.Currency.TOMAN;
             long principal=CalculationArithmetic.money(amount.getText().toString(),unit);
             boolean current=indexPack.getSelectedItemPosition()==0;CalculationReference first,last;
-            if(current){CalculationCurrentIndices pack=currentIndices();first=pack.at(s);last=pack.at(e);}
-            else{CalculationDelayPack pack=delayPack();first=pack.at(s);last=pack.at(e);}
+            if(current){CalculationCurrentIndices pack=currentIndices();first=pack.at(s);last=pack.at(indexedEnd);}
+            else{CalculationDelayPack pack=delayPack();first=pack.at(s);last=pack.at(indexedEnd);}
             String selectedVersion=current?CalculationCurrentIndices.VERSION:CalculationDelayPack.VERSION;
-            CalculationDelayMath.Result r=CalculationDelayMath.calculate(selectedMode,principal,s,e,explanation,first.series,first,last,RoundingMode.HALF_UP);
+            CalculationDelayMath.Result r=CalculationDelayMath.calculate(selectedMode,principal,s,indexedEnd,explanation,first.series,first,last,RoundingMode.HALF_UP);
             Long caseId=casePick.getSelectedItemPosition()==0?null:cases.get(casePick.getSelectedItemPosition()-1).id;
             Map<String,String> inputs=new LinkedHashMap<>(),results=new LinkedHashMap<>();
             inputs.put("title",title.getText().toString());inputs.put("caseId",caseId==null?"":caseId.toString());inputs.put("amount",amount.getText().toString());inputs.put("currency",unit.name());
@@ -109,10 +116,19 @@ final class CalculationUi {
             results.put("اصل و خسارت",CalculationArithmetic.display(r.adjustedRials,CalculationArithmetic.Currency.RIAL));
             results.put("معادل تومان اصل و خسارت",CalculationArithmetic.display(r.adjustedRials,CalculationArithmetic.Currency.TOMAN));results.put("کسر دقیق ریالی",r.exactAdjustedRials);
             List<String> steps=new ArrayList<>(Arrays.asList(principal+" × "+last.value+" ÷ "+first.value+" = "+r.exactAdjustedRials+" ریال", "خسارت = مبلغ تعدیل‌شده منهای اصل دین؛ گرد کردن فقط در پایان"));
-            List<String> warnings=Arrays.asList("نتیجه مشروط به صحت بررسی حقوقی کاربر است؛ تعیین استحقاق و مبلغ قابل وصول بر عهده مرجع صالح است. موارد خاص در این مسیر پشتیبانی نمی‌شوند.",current?"شاخص‌ها مستقیم از گزارش رسمی بانک مرکزی دریافت شده‌اند؛ پایه ۱۴۰۰ و پوشش تا شهریور ۱۴۰۵. اتصال به‌روزرسانی زنده وجود ندارد.":"شاخص‌ها از تصویر بازنشرشده جدول بانک مرکزی تطبیق داده شده‌اند؛ پوشش فقط ۱۳۹۹ تا ۱۴۰۱ است. اتصال به‌روزرسانی زنده وجود ندارد.");
+            List<String> warnings=Arrays.asList("نتیجه مشروط به صحت بررسی حقوقی کاربر است؛ تعیین استحقاق و مبلغ قابل وصول بر عهده مرجع صالح است. فقط مسیر و شرایط ثبت‌شده در این گزارش بررسی شده‌اند.",current?"شاخص‌ها مستقیم از گزارش رسمی بانک مرکزی دریافت شده‌اند؛ پایه ۱۴۰۰ و پوشش تا شهریور ۱۴۰۵. اتصال به‌روزرسانی زنده وجود ندارد.":"شاخص‌ها از تصویر بازنشرشده جدول بانک مرکزی تطبیق داده شده‌اند؛ پوشش فقط ۱۳۹۹ تا ۱۴۰۱ است. اتصال به‌روزرسانی زنده وجود ندارد.");
             List<CalculationReference> delayRefs=first.id.equals(last.id)?Collections.singletonList(first):Arrays.asList(first,last);
             String delayEngine=CalculationDelayMath.ENGINE_VERSION,delayRule="reviewed-simple-delay-522-812-850/1";
-            inputs.put("paymentMethod",partial?"PARTIAL":"SINGLE");
+            inputs.put("paymentMethod",route.name());
+            if(exception){
+                inputs.put("insolvencyDate",CalculationReference.date(insolvencyDate.getText().toString()));inputs.put("judgmentBasis",judgmentBasis.getText().toString());
+                inputs.put("indexedEnd",indexedEnd);inputs.put("paymentSource",CalculationDelayExceptions.SOURCE);
+                inputs.put("scopeConfirmed","حکم و شرایط مسیر رأی ۸۲۴ تأیید شده؛ بدون پرداخت جزئی و سایر استثناها");
+                inputs.put("resultScope",route==CalculationDelayExceptions.Route.INSOLVENCY_STOP?"فقط تا ثبوت اعسار؛ بدون خسارت اقساط معوق بعدی":"فقط یک قسط معوق؛ نه کل محکوم‌به");
+                steps.add(route==CalculationDelayExceptions.Route.INSOLVENCY_STOP?"تاریخ پایان درخواست "+e+"؛ پایان مؤثر تعدیل "+indexedEnd+" طبق تاریخ ثبوت اعسار. از توقف تا پایان درخواست، تعدیل افزوده نشده است.":"مبدأ فقط سررسید همین قسطِ حکم است: "+s+"؛ خسارت دوره پیش از اعسار در این نتیجه جمع نشده است.");
+                warnings=new ArrayList<>(warnings);warnings.add("رأی ۸۲۴؛ متن بازنشرشده بررسی‌شده. تاریخ و مبلغ از حکم و شرایط پرونده وارد می‌شود؛ نرم‌افزار اعسار یا معوق بودن قسط را احراز نمی‌کند.");
+                delayRule=CalculationDelayExceptions.VERSION;delayEngine="reviewed-delay-exceptions/1";
+            }
             if(partial){
                 CalculationPartialPayments.Indices lookup;
                 if(current){CalculationCurrentIndices pack=currentIndices();lookup=pack::at;}
