@@ -199,6 +199,35 @@ public class CalculationUiTest {
         }catch(Exception e){throw new AssertionError(e);}});ins.waitForIdleSync();}
         finally{ins.runOnMainSync(()->{try{if(original[0]!=null)a.db.importJson(original[0]);}catch(Exception e){throw new AssertionError(e);}finally{a.finish();}});ins.waitForIdleSync();}
     }
+    @Test public void prescribedHeadScheduleRetainsSourceAndRevises()throws Exception{
+        Instrumentation ins=InstrumentationRegistry.getInstrumentation();Context c=ins.getTargetContext();
+        MainActivity a=(MainActivity)ins.startActivitySync(new Intent(c,MainActivity.class).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK|Intent.FLAG_ACTIVITY_CLEAR_TASK));ins.waitForIdleSync();
+        final String[] original={null};
+        try{ins.runOnMainSync(()->{try{
+            original[0]=a.db.exportJson();OfficeCalculations repo=new OfficeCalculations(a.db);int before=repo.list(null).size();
+            CalculationUi ui=new CalculationUi(a);ui.body(false,null);
+            assertTrue(selectItem(a.page,"جدول صدمات مستقل سر و صورت؛ ماده ۷۰۹"));
+            assertTrue(selectItem(a.page,"دامیه سر و صورت"));
+            input(a.page,"شرح صدمه و عضو یا منفعت").setText("Synthetic independent head injury");
+            input(a.page,"تاریخ وقوع صدمه").setText("1405/01/01");input(a.page,"تاریخ پرداخت / ارزش‌گذاری انتخابی").setText("1405/02/01");
+            input(a.page,"مرجع، شماره و تاریخ مستند تعیین مبلغ یا درصد").setText("Medical classification fixture");
+            input(a.page,"مستند انتخاب تاریخ ارزش‌گذاری").setText("Synthetic payment date");
+            click(a.page,"محاسبه و نمایش نتیجه");assertEquals(before,repo.list(null).size());
+            ((CheckBox)findText(a.page,"تشخیص مستند سر یا صورت و استقلال این صدمه بررسی شده؛ فاقد فوت، تداخل، آثار اضافه و حکم خاص است")).setChecked(true);
+            click(a.page,"محاسبه و نمایش نتیجه");click(a.page,"ذخیره محاسبه");
+            CalculationSnapshot first=repo.list(null).get(0);assertEquals("420,000,000 ریال",first.resultSnapshot.get("مبلغ"));
+            assertEquals("DAMIYA",first.inputSnapshot.get("prescribedInjury"));assertEquals("PRESCRIBED",first.inputSnapshot.get("bodyMode"));
+            assertTrue(first.inputSnapshot.get("_rulePackSnapshot").contains("injury.DAMIYA.ratio=2/100"));
+            String report=CalculationReport.text(first);assertTrue(report.contains("ماده ۷۰۹"));assertTrue(report.contains("متن تاریخی مجلس"));
+            click(a.page,"نسخه جدید / محاسبه مجدد");assertTrue(selectItem(a.page,"حارصه سر و صورت"));
+            input(a.page,"علت تغییر نسبت به نسخه قبلی").setText("Corrected medical classification fixture");
+            ((CheckBox)findText(a.page,"تشخیص مستند سر یا صورت و استقلال این صدمه بررسی شده؛ فاقد فوت، تداخل، آثار اضافه و حکم خاص است")).setChecked(true);
+            click(a.page,"محاسبه و نمایش نتیجه");click(a.page,"ذخیره محاسبه");
+            CalculationSnapshot next=repo.list(null).get(0);assertEquals(first.id,next.previousSnapshotId);assertEquals("210,000,000 ریال",next.resultSnapshot.get("مبلغ"));
+            a.db.importJson(a.db.exportJson());assertEquals("420,000,000 ریال",repo.get(first.id).resultSnapshot.get("مبلغ"));
+        }catch(Exception e){throw new AssertionError(e);}});ins.waitForIdleSync();}
+        finally{ins.runOnMainSync(()->{try{if(original[0]!=null)a.db.importJson(original[0]);}catch(Exception e){throw new AssertionError(e);}finally{a.finish();}});ins.waitForIdleSync();}
+    }
     private static boolean selectItem(View v,String label){
         if(v instanceof Spinner){Spinner spinner=(Spinner)v;for(int i=0;i<spinner.getCount();i++)if(label.equals(spinner.getItemAtPosition(i).toString())){spinner.setSelection(i);return true;}}
         if(v instanceof ViewGroup)for(int i=0;i<((ViewGroup)v).getChildCount();i++)if(selectItem(((ViewGroup)v).getChildAt(i),label))return true;

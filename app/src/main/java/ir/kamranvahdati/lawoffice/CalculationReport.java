@@ -64,6 +64,7 @@ final class CalculationReport {
             case "bodyMode":return "روش تبدیل دیه / ارش";case "assessedValue":return "مقدار اعلام‌شده";
             case "injury":return "صدمه و عضو یا منفعت";case "occurredDate":return "تاریخ وقوع";
             case "assessment":return "مستند تعیین مرجع";case "expertOpinion":return "نظر کارشناسی مستقل";
+            case "enforcementAward":return "محکوم‌به / مورد اجرا با واحد ورودی";case "prescribedInjury":return "شناسه صدمه جدول قانونی";
             case "dateBasis":return "مستند تاریخ ارزش‌گذاری";
             case "title":return "عنوان";case "caseId":return "شناسه پرونده";
             case "amount":return "مبلغ ورودی";case "currency":return "واحد ورودی";

@@ -391,3 +391,21 @@ Still incomplete: current/historical index coverage beyond 1399–1401; prescrib
 injury and taghliz/combination paths; other special tariff cases; final signed
 candidate and actual production-APK upgrade verification. Do not call the
 bounded four-form development app a completed 10.3 release.
+
+### Execution tariff verified; bounded prescribed injuries
+
+Remote 23537a7931c1586c064c9fe358d77568dcededa5 matches local 68d5c906 tree
+a8991510f1f72f8ab55188dab59838940e4de3b8. Run 37746110792: foundation,
+API30 and API35 all SUCCESS; the added enforcement persistence test passed.
+Continued from the remote commit on a fresh local branch without deleting history.
+
+Read/visually inspected the Majlis print PDF pages 91–92 at ILO NATLEX 103202.
+Added a separate historical article-709 rule asset for seven independent head/face
+injury categories (harisa through munaqqila, each below one third). The user must
+supply the medical/legal classification and affirm no overlap, residual effects,
+death or special ruling. Body wounds, mamuma/damigha and automatic diagnosis are
+explicitly excluded. Rate-year validation and immutable source snapshots reuse
+existing infrastructure. No database migration or version bump. Existing body
+19 checks +15 new source-derived and scope/year validation assertions PASS locally.
+Added Android classification/revision/backup UI test; changed-candidate CI pending.
+This bounded pathway does not complete all injury, taghliz or combination rules.

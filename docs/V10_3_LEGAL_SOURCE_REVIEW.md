@@ -297,3 +297,14 @@ engine rejects instead of inventing precedence. Service uses WHOLE, with no
 4,000,000 bound; award 1,000,000,000 => 4,000,000–20,000,000. At 200,000,049,
 4,000,001 exceeds the exact 4,000,000.98 ceiling and is rejected before rounding.
 This does not resolve remaining special tariff interactions or current indexes.
+
+### Article 709 bounded schedule — 2026-10-08
+
+Downloaded original Majlis print PDF from NATLEX 103202 and visually inspected
+pages 91–92. Implemented only the seven head/face categories through munaqqila;
+exact fractions and a historical-review version live in their own properties
+asset. No body-member fraction substitution, residual-effect addition, automatic
+injury classification or >=one-third rule is inferred. Independently derived
+1405 fixtures for the 1,2,3,4,5,10,15 percent rows are respectively 210m, 420m,
+630m, 840m, 1,050m, 2,100m, 3,150m IRR. Other rates cannot silently fall back.
+Current consolidated-status verification is not implied by historical text.
