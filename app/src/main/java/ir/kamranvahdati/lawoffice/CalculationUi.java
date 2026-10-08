@@ -23,7 +23,7 @@ final class CalculationUi {
         button("حق‌الوکاله",()->new AlertDialog.Builder(a).setTitle("نوع حق‌الوکاله")
             .setItems(new String[]{"توافقی قراردادی","تعرفه‌ای؛ فروض پشتیبانی‌شده"},(d,n)->fee(n==1,null)).show());
         button("خسارت تأخیر تأدیه",()->delay(null));
-        button("دیه",()->body(false,null));button("ارش",()->body(true,null));
+        button("دیه",()->new AlertDialog.Builder(a).setTitle("نوع محاسبه دیه").setItems(new String[]{"صدمات یا مقدار اعلام‌شده","دیه نفس و بررسی تغلیظ"},(d,n)->{if(n==0)body(false,null);else death(null);}).show());button("ارش",()->body(true,null));
         button("تاریخچه محاسبات",this::history);
         button("منابع محاسبات و وضعیت به‌روزرسانی",this::sources);
         a.page.addView(a.info("دامنه ابزارها","تعرفه فروض مشخص متن مصوب ۱۳۹۸ را پوشش می‌دهد؛ دیه شامل جدول محدود صدمات سر و صورت و تبدیل مقدار اعلام‌شده است؛ ارش تبدیل مقدار اعلام‌شده است. تعیین خودکار صدمه و همه موارد خاص هنوز ارائه نشده است."));
@@ -101,6 +101,50 @@ final class CalculationUi {
                 selectedMode==CalculationDelayMath.Mode.ORDINARY_DEBT?CalculationSnapshot.Type.ORDINARY_DEBT_DELAY:CalculationSnapshot.Type.CHEQUE_DELAY,
                 CalculationDelayMath.ENGINE_VERSION,"reviewed-simple-delay-522-812-850/1",CalculationDelayPack.VERSION,JalaliDate.today().value(),e,
                 inputs,results,refs,steps,warnings,audit,RoundingMode.HALF_UP,now,now),false);
+        }catch(Exception e){a.toast(message(e));}});
+    }
+    private Spinner finding(String label,CalculationSnapshot prior,String key){
+        Spinner s=pick(label,new String[]{"بررسی نشده","بله؛ مستند احراز شده","خیر؛ مستند رد شده"});
+        s.setSelection(CalculationDeath.Finding.valueOf(previous(prior,key,"UNKNOWN")).ordinal());return s;
+    }
+    void death(CalculationSnapshot prior){
+        a.clear("دیه نفس و بررسی تغلیظ","مبنای عادی و شرایط حقوقی را از مستندات پرونده وارد کنید");a.detailBack=()->center(related);
+        final CalculationDeath.Rules rules;
+        try(InputStreamReader r=new InputStreamReader(a.getAssets().open("calculation/death-1392-v1.properties"),StandardCharsets.UTF_8)){rules=new CalculationDeath.Rules(r);}
+        catch(Exception e){a.toast(message(e));return;}
+        EditText title=field("عنوان محاسبه",prior==null?"دیه نفس":prior.title);
+        List<OfficeDb.CaseRecord> cases=a.db.cases(null,"همه",null);List<String> names=new ArrayList<>();names.add("مستقل از پرونده");for(OfficeDb.CaseRecord c:cases)names.add(c.title);
+        Spinner casePick=pick("ارتباط محاسبه",names.toArray(new String[0]));Long selected=prior==null?(related==null?null:related.id):prior.caseId;
+        for(int i=0;i<cases.size();i++)if(selected!=null&&cases.get(i).id==selected)casePick.setSelection(i+1);
+        EditText percent=field("درصد مبنای دیه نفس عادی از نرخ کامل؛ بدون افزایش",previous(prior,"basePercent",""));
+        EditText event=field("تاریخ رفتار مرتکب",previous(prior,"occurredDate",""));a.bindJalaliPicker(event);
+        EditText death=field("تاریخ فوت",previous(prior,"deathDate",""));a.bindJalaliPicker(death);
+        EditText valueDate=field("تاریخ پرداخت / ارزش‌گذاری انتخابی",previous(prior,"effectiveDate",JalaliDate.today().value()));a.bindJalaliPicker(valueDate);
+        Spinner actMonth=finding("رفتار در ماه حرام واقع شده است؟",prior,"actMonth");
+        Spinner deathMonth=finding("فوت در ماه حرام واقع شده است؟",prior,"deathMonth");
+        Spinner actMecca=finding("رفتار در محدوده حرم مکه واقع شده است؟",prior,"actMecca");
+        Spinner deathMecca=finding("فوت در محدوده حرم مکه واقع شده است؟",prior,"deathMecca");
+        EditText basis=field("مستند مبنای عادی، زمان و مکان رفتار و فوت",previous(prior,"assessment",""));
+        EditText dateBasis=field("مستند انتخاب تاریخ ارزش‌گذاری",previous(prior,"dateBasis",""));
+        EditText reason=prior==null?null:field("علت تغییر نسبت به نسخه قبلی","");
+        CheckBox scope=confirm("موضوع دیه نفس است؛ مبنای عادی و شرایط مواد ۵۵۵ تا ۵۵۷ را بررسی کرده‌ام و مبلغ ورودی شامل افزایش نیست");
+        a.page.addView(a.info("مبنای محاسبه","افزایش فقط یک‌بار به میزان یک‌سوم مبنای عادی محاسبه می‌شود، حتی اگر هر دو سبب زمانی و مکانی احراز شوند. تاریخ شمسی به‌تنهایی ماه حرام را اثبات نمی‌کند؛ محرم، رجب، ذی‌قعده و ذی‌حجه و مرز مغرب شرعی باید مستند بررسی شوند. سایر اماکن متبرک مشمول نیستند. این مسیر سهم وراث، مسئولیت بیمه یا صندوق و مبنای ویژه اشخاص را تعیین نمی‌کند؛ جراحت و ارش در این مسیر نیستند."));
+        button("محاسبه و نمایش نتیجه",()->{try{
+            CalculationReference rate=bodyRate();String e=CalculationReference.date(event.getText().toString()),d=CalculationReference.date(death.getText().toString()),v=CalculationReference.date(valueDate.getText().toString());
+            CalculationDeath.Finding am=CalculationDeath.Finding.values()[actMonth.getSelectedItemPosition()],dm=CalculationDeath.Finding.values()[deathMonth.getSelectedItemPosition()],ap=CalculationDeath.Finding.values()[actMecca.getSelectedItemPosition()],dp=CalculationDeath.Finding.values()[deathMecca.getSelectedItemPosition()];
+            CalculationDeath.Result r=CalculationDeath.calculate(rules,rate,e,d,v,percent.getText().toString(),basis.getText().toString(),scope.isChecked(),am,dm,ap,dp);
+            Long caseId=casePick.getSelectedItemPosition()==0?null:cases.get(casePick.getSelectedItemPosition()-1).id;
+            Map<String,String> in=new LinkedHashMap<>(),out=new LinkedHashMap<>();
+            in.put("title",title.getText().toString());in.put("caseId",caseId==null?"":caseId.toString());in.put("bodyMode","DEATH");in.put("basePercent",percent.getText().toString());
+            in.put("occurredDate",e);in.put("deathDate",d);in.put("effectiveDate",v);in.put("actMonth",am.name());in.put("deathMonth",dm.name());in.put("actMecca",ap.name());in.put("deathMecca",dp.name());
+            in.put("assessment",basis.getText().toString());in.put("dateBasis",CalculationReference.required(dateBasis.getText().toString(),"مستند ارزش‌گذاری"));in.put("sourceUrl",rules.sourceUrl);in.put("_rulePackSnapshot",rules.serialized);in.put("scopeConfirmed","دیه نفس و مبنای عادی بدون افزایش؛ بررسی مستندات توسط کاربر");
+            out.put("مبنای عادی؛ کسر دقیق ریالی",r.base.toString());out.put("افزایش؛ کسر دقیق ریالی",r.additional.toString());out.put("تغلیظ",r.enhanced?"اعمال شد؛ یک‌سوم":"اعمال نشد؛ فقدان شرایط احراز شد");
+            long total=r.total.roundedRials(RoundingMode.HALF_UP);out.put("مبلغ",CalculationArithmetic.display(total,CalculationArithmetic.Currency.RIAL));out.put("معادل تومان",CalculationArithmetic.display(total,CalculationArithmetic.Currency.TOMAN));
+            List<String> steps=Arrays.asList("نرخ عادی × درصد مبنای مستند / ۱۰۰ = "+r.base,"افزایش = "+r.additional,"جمع دقیق = "+r.total+"؛ گرد کردن فقط در پایان");
+            List<String> warnings=Arrays.asList("نتیجه مشروط به احراز قضایی مبنای عادی و زمان و مکان است؛ تعیین سهم وراث یا تعهد بیمه و صندوق نیست. متن تاریخی مواد ۵۵۵ تا ۵۵۷ بررسی شده؛ بررسی همه اصلاحات و موارد خاص تکمیل نشده است.",rate.sourceType);
+            long now=Math.max(System.currentTimeMillis(),prior==null?0:prior.createdAt+1);List<CalculationSnapshot.Override> audit=new ArrayList<>();
+            if(prior!=null){Set<String> keys=new LinkedHashSet<>(prior.inputSnapshot.keySet());keys.addAll(in.keySet());for(String key:keys){String old=prior.inputSnapshot.getOrDefault(key,""),n=in.getOrDefault(key,"");if(!old.equals(n))audit.add(new CalculationSnapshot.Override(CalculationSnapshot.OverrideType.INPUT,key,old,n,now,CalculationReference.required(reason.getText().toString(),"علت تغییر")));}}
+            show(new CalculationSnapshot(UUID.randomUUID().toString(),prior==null?"":prior.id,title.getText().toString(),caseId,CalculationSnapshot.Type.DIYAH,CalculationDeath.ENGINE_VERSION,rules.version,rate.version,JalaliDate.today().value(),v,in,out,Collections.singletonList(rate),steps,warnings,audit,RoundingMode.HALF_UP,now,now),false);
         }catch(Exception e){a.toast(message(e));}});
     }
     void body(boolean arsh,CalculationSnapshot prior){
@@ -277,7 +321,7 @@ final class CalculationUi {
         if(saved&&(s.type==CalculationSnapshot.Type.ORDINARY_DEBT_DELAY||s.type==CalculationSnapshot.Type.CHEQUE_DELAY))
             button("نسخه جدید / محاسبه مجدد",()->delay(s));
         if(saved&&(s.type==CalculationSnapshot.Type.DIYAH||s.type==CalculationSnapshot.Type.ARSH_ESTIMATE))
-            button("نسخه جدید / محاسبه مجدد",()->body(s.type==CalculationSnapshot.Type.ARSH_ESTIMATE,s));
+            button("نسخه جدید / محاسبه مجدد",()->{if("DEATH".equals(s.inputSnapshot.get("bodyMode")))death(s);else body(s.type==CalculationSnapshot.Type.ARSH_ESTIMATE,s);});
     }
     private static String message(Exception e){return e.getMessage()==null?"محاسبه قابل انجام نیست":e.getMessage();}
 }

@@ -409,3 +409,24 @@ existing infrastructure. No database migration or version bump. Existing body
 19 checks +15 new source-derived and scope/year validation assertions PASS locally.
 Added Android classification/revision/backup UI test; changed-candidate CI pending.
 This bounded pathway does not complete all injury, taghliz or combination rules.
+
+## Active delivery continuation — 2026-10-08
+
+Verified remote 23537a7 and preserved local 186f11f with identical published tree
+77c94a3153982ecc6dda4bf4bac0da71d64e83c2. Published as 665785ffc1a30360ef31af84d6a9bd9d37538f18;
+run 37798179583 is executing Android verification. Existing local branches and
+worktrees remain unchanged. Work continues in continuation/v103-delivery.
+
+Added a separately versioned death/taghliz engine and form, explicit unknown/
+yes/no findings for act and death time/place, date-order validation, positive
+ordinary assessed base, one-third increment only once, source/input snapshots,
+immutable recalculation and canonical report integration. No schema, version,
+application ID or signing configuration change. New numeric suite: 93 PASS;
+existing body 19 and prescribed 15 PASS after shared test-script change.
+New Android unknown/revision/report/backup test added; candidate CI is pending.
+
+Outstanding completion gates remain: broader prescribed-injury/combination and
+special-tariff coverage; dependable current index data; complete Android tests
+for this changed tree; final metadata bump and same-certificate signed upgrade.
+No final 10.3 claim is made by this checkpoint. First next action: publish this
+changed candidate on the authorized codex/v10.3 branch and inspect its actual CI.

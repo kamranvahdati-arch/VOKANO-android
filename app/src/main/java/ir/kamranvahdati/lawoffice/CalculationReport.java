@@ -59,6 +59,9 @@ final class CalculationReport {
     }
     private static String label(String key){
         switch(key){
+            case "basePercent":return "درصد مبنای عادی نفس";case "deathDate":return "تاریخ فوت";
+            case "actMonth":return "ماه حرام رفتار";case "deathMonth":return "ماه حرام فوت";
+            case "actMecca":return "حرم مکه؛ رفتار";case "deathMecca":return "حرم مکه؛ فوت";
             case "dueDate":return "سررسید / تاریخ چک";case "demandDate":return "تاریخ مطالبه";
             case "startDate":return "مبدأ حقوقی";case "delayMode":return "نوع دین";case "scopeConfirmed":return "شرایط تأییدشده";
             case "bodyMode":return "روش تبدیل دیه / ارش";case "assessedValue":return "مقدار اعلام‌شده";

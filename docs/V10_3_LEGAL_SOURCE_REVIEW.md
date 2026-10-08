@@ -308,3 +308,20 @@ injury classification or >=one-third rule is inferred. Independently derived
 1405 fixtures for the 1,2,3,4,5,10,15 percent rows are respectively 210m, 420m,
 630m, 840m, 1,050m, 2,100m, 3,150m IRR. Other rates cannot silently fall back.
 Current consolidated-status verification is not implied by historical text.
+
+### Death/taghliz continuation — 2026-10-08
+
+Read original Majlis print preserved at NATLEX 103202, pages 75–76, articles
+555–557. The new separate versioned pack records a one-third increment. The
+engine requires a confirmed death claim and documented ordinary base percentage;
+it does not infer sex/fund/insurer entitlements or heirs' shares. Act and death
+are separately recorded for both sacred-month and Mecca-sanctuary conditions.
+Unknown findings cannot produce an unqualified negative result; a positively
+established alternative suffices. Simultaneous temporal and spatial grounds
+apply the increment once. Lunar months and sunset boundaries are explicitly
+reviewed by the lawyer, not guessed from Gregorian/Jalali conversion. Article
+556's special parties/fetal cases are not automatically classified by this form.
+93 pure Java checks pass, including an independent exhaustive 81-combination
+oracle that enumerates all completions of unknown facts. Ordinary full 1405
+base 21bn IRR yields 28bn when applicable; documented 50% base yields 14bn.
+Historical source status remains explicit; current-consolidation not claimed.

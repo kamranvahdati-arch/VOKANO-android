@@ -228,6 +228,40 @@ public class CalculationUiTest {
         }catch(Exception e){throw new AssertionError(e);}});ins.waitForIdleSync();}
         finally{ins.runOnMainSync(()->{try{if(original[0]!=null)a.db.importJson(original[0]);}catch(Exception e){throw new AssertionError(e);}finally{a.finish();}});ins.waitForIdleSync();}
     }
+    @Test public void deathTaghlizRejectsUnknownAndPreservesRevision()throws Exception{
+        Instrumentation ins=InstrumentationRegistry.getInstrumentation();Context c=ins.getTargetContext();
+        MainActivity a=(MainActivity)ins.startActivitySync(new Intent(c,MainActivity.class).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK|Intent.FLAG_ACTIVITY_CLEAR_TASK));ins.waitForIdleSync();
+        final String[] original={null};
+        try{ins.runOnMainSync(()->{try{
+            original[0]=a.db.exportJson();OfficeCalculations repo=new OfficeCalculations(a.db);int before=repo.list(null).size();new CalculationUi(a).death(null);
+            input(a.page,"درصد مبنای دیه نفس عادی از نرخ کامل؛ بدون افزایش").setText("100");
+            input(a.page,"تاریخ رفتار مرتکب").setText("1405/01/01");input(a.page,"تاریخ فوت").setText("1405/01/02");
+            input(a.page,"تاریخ پرداخت / ارزش‌گذاری انتخابی").setText("1405/01/03");
+            input(a.page,"مستند مبنای عادی، زمان و مکان رفتار و فوت").setText("independent 555-557 facts");
+            input(a.page,"مستند انتخاب تاریخ ارزش‌گذاری").setText("valuation fixture");
+            ((CheckBox)findText(a.page,"موضوع دیه نفس است؛ مبنای عادی و شرایط مواد ۵۵۵ تا ۵۵۷ را بررسی کرده‌ام و مبلغ ورودی شامل افزایش نیست")).setChecked(true);
+            click(a.page,"محاسبه و نمایش نتیجه");assertEquals(before,repo.list(null).size());assertNotNull(input(a.page,"تاریخ فوت"));
+            findingSelection(a,"رفتار در ماه حرام واقع شده است؟",1);findingSelection(a,"فوت در ماه حرام واقع شده است؟",1);
+            findingSelection(a,"رفتار در محدوده حرم مکه واقع شده است؟",1);findingSelection(a,"فوت در محدوده حرم مکه واقع شده است؟",1);
+            click(a.page,"محاسبه و نمایش نتیجه");click(a.page,"ذخیره محاسبه");CalculationSnapshot first=repo.list(null).get(0);
+            assertEquals("28,000,000,000 ریال",first.resultSnapshot.get("مبلغ"));assertEquals("DEATH",first.inputSnapshot.get("bodyMode"));
+            assertTrue(first.inputSnapshot.get("_rulePackSnapshot").contains("increment.denominator=3"));
+            assertTrue(CalculationReport.text(first).contains("۵۵۵ تا ۵۵۷"));
+            click(a.page,"نسخه جدید / محاسبه مجدد");assertEquals("1405/01/02",input(a.page,"تاریخ فوت").getText().toString());
+            findingSelection(a,"رفتار در ماه حرام واقع شده است؟",2);findingSelection(a,"رفتار در محدوده حرم مکه واقع شده است؟",2);
+            input(a.page,"علت تغییر نسبت به نسخه قبلی").setText("corrected act findings");
+            ((CheckBox)findText(a.page,"موضوع دیه نفس است؛ مبنای عادی و شرایط مواد ۵۵۵ تا ۵۵۷ را بررسی کرده‌ام و مبلغ ورودی شامل افزایش نیست")).setChecked(true);
+            click(a.page,"محاسبه و نمایش نتیجه");click(a.page,"ذخیره محاسبه");CalculationSnapshot next=repo.list(null).get(0);
+            assertEquals(first.id,next.previousSnapshotId);assertEquals("21,000,000,000 ریال",next.resultSnapshot.get("مبلغ"));
+            assertFalse(next.overrides.isEmpty());a.db.importJson(a.db.exportJson());
+            assertEquals("28,000,000,000 ریال",repo.get(first.id).resultSnapshot.get("مبلغ"));assertEquals("NO",repo.get(next.id).inputSnapshot.get("actMonth"));
+        }catch(Exception e){throw new AssertionError(e);}});ins.waitForIdleSync();}
+        finally{ins.runOnMainSync(()->{try{if(original[0]!=null)a.db.importJson(original[0]);}catch(Exception e){throw new AssertionError(e);}finally{a.finish();}});ins.waitForIdleSync();}
+    }
+    private static void findingSelection(MainActivity a,String label,int index){
+        for(int i=0;i<a.page.getChildCount()-1;i++)if(a.page.getChildAt(i) instanceof TextView&&label.contentEquals(((TextView)a.page.getChildAt(i)).getText())&&a.page.getChildAt(i+1) instanceof Spinner){((Spinner)a.page.getChildAt(i+1)).setSelection(index);return;}
+        throw new AssertionError("finding field missing: "+label);
+    }
     private static boolean selectItem(View v,String label){
         if(v instanceof Spinner){Spinner spinner=(Spinner)v;for(int i=0;i<spinner.getCount();i++)if(label.equals(spinner.getItemAtPosition(i).toString())){spinner.setSelection(i);return true;}}
         if(v instanceof ViewGroup)for(int i=0;i<((ViewGroup)v).getChildCount();i++)if(selectItem(((ViewGroup)v).getChildAt(i),label))return true;
