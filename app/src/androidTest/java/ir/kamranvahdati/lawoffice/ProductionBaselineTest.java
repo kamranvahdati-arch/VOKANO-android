@@ -21,7 +21,7 @@ import java.util.*;
 public class ProductionBaselineTest {
  private static final String CODE="fixture-only-backup-2026";
  @Test public void emptyReleaseAndCompleteBackupAcrossApplicationDataReset()throws Exception{
-  String mode=InstrumentationRegistry.getArguments().getString("production_mode","");Assume.assumeTrue(mode.equals("seed")||mode.equals("restore"));
+  String mode=InstrumentationRegistry.getArguments().getString("production_mode","");Assume.assumeTrue(mode.equals("seed")||mode.equals("restore")||mode.equals("clean"));
   assertFalse("Production must not be debuggable",BuildConfig.DEBUG);
   Instrumentation ins=InstrumentationRegistry.getInstrumentation();Context c=ins.getTargetContext();
   assertEquals("ir.kamranvahdati.lawoffice",c.getPackageName());
@@ -32,6 +32,9 @@ public class ProductionBaselineTest {
    JSONObject empty=new JSONObject(a.db.exportJson()).getJSONObject("tables");
    for(Iterator<String> it=empty.keys();it.hasNext();){String table=it.next();assertEquals("Nonempty clean release: "+table,0,empty.getJSONArray(table).length());}
    assertEquals(0,a.db.countDemoRows());assertFalse(a.prefs.contains("photo"));
+   // Current releases use workspace-backed light backups. The historical seed/
+   // restore fixture below belongs to the legacy full-media backup format.
+   if(mode.equals("clean"))return;
    if(mode.equals("seed")){
     String today=JalaliDate.today().value(),tomorrow=JalaliDate.addDays(today,1);
     long client=a.db.addClient("موکل آزمون پشتیبان","0013540831","پدر","1360/01/01","09120000001","تهران","صرفاً داده تست");

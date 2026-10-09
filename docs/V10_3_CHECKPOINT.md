@@ -560,3 +560,46 @@ missing findings, missing years and invalid percentages fail closed. Inputs,
 sources, warning, exact total and revisions use existing immutable persistence.
 Body34, prescribed15 and death93 checks PASS locally. Android finding/revision/
 backup test added; changed-tree Android CI pending. No schema or signing change.
+
+## Verified candidate delivery checkpoint — 2026-10-09
+
+Source740140610506ae3962ffaf0e18b27d5601c0bdf4 contains the new tariff paths
+and independent assessed-award totals. Tariff predecessor7edaea2 and this source
+both passed their development build/API30/API35 pipelines:37909991535 and
+37910451155. Source7401406 API35 logs include CalculationUiTest OK(14tests).
+No older dirty working copy was reset; corresponding local commits were retained.
+
+Permanent signing was performed privately on the exact CI37910451155 release
+and instrumentation APKs (download11607085025, verified archive digest).
+Both signed APKs verified against certificate
+26055f09370416e9cd61c08246b80c57367470cdb6873e282b5b6521cf097202.
+Candidate APK SHA256:
+b587ee25661f12cf49a2b14684e51e83cb064b67ca8026ce3b8916d8199de59d.
+No signing secret or private key was uploaded or committed. No new signing key.
+Release-validation manifest b9ff0e8 records source, build, exact archive and blobs.
+
+Permanent upgrade run37960845628 completed SUCCESS on API30(job113922978479)
+and API35(job113922978053). It installed the original signed10.2/code15,
+seeded/reopened synthetic data, installed candidate10.3/code16 without clear or
+uninstall, and passed preservation, calculation storage/UI, backup/workspace,
+entry and smoke regressions. API35 logs explicitly end in permanent upgrade PASS.
+
+A separate fresh-emulator validation was added in71e895f, reusing the identical
+signed APKs. It invokes the existing ProductionBaselineTest seed phase, which
+asserts every exported table is empty before synthetic fixture creation and
+used a legacy full-media backup fixture. Clean run37961150107 FAILED on both
+APIs after the empty-database checks: FullBackup correctly rejected nonworkspace
+media. This is not a clean-install PASS. Added a dedicated clean-only mode; the
+current WorkspaceProviderTest supplies the light-backup checks. Rebuild and
+permanently sign the updated instrumentation before rerunning. App sources unchanged.
+
+CURRENT RELEASE STATUS: validation candidate, NOT completed production scope.
+Version10.3/code16; schema16; application ID unchanged. No new migration.
+Remaining requested domain coverage includes replacement-counsel/other tariff
+intersections, broader prescribed injury rules and legally qualified overlap.
+Independent assessed totals do NOT implement automatic overlap adjudication.
+First next implementation: explicit article18 replacement after reversal,
+kept distinct from article14 note2 continued representation; preserve every
+existing rule pack and verify its source interaction before enabling the path.
+Any changed app tree requires a new signed candidate and corresponding proof;
+never attribute the signed7401406 proof to later application changes.
