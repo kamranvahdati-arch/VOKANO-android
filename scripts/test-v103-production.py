@@ -16,9 +16,10 @@ def download(item, target):
    with urllib.request.urlopen(req,timeout=60) as r:f.write(base64.b64decode(json.load(r)['content']))
  assert target.stat().st_size==item['bytes']
  assert hashlib.sha256(target.read_bytes()).hexdigest()==item['sha256']
-def test(name,phase=None):
+def test(name,phase=None,production_mode=None):
  args=['shell','am','instrument','-w','-r','-e','class',PACKAGE+'.'+name]
  if phase:args+=['-e','upgrade_phase',phase]
+ if production_mode:args+=['-e','production_mode',production_mode]
  result=adb(*args,PACKAGE+'.test/'+PACKAGE+'.OfficeTestRunner')
  (out/(name+'-'+(phase or 'suite')+'.txt')).write_text(result)
  print(result,flush=True)
@@ -39,6 +40,17 @@ signer=pathlib.Path(os.environ['ANDROID_HOME'])/'build-tools/35.0.0/apksigner'
 for i,apk in enumerate([baseline,candidate,instrumentation]):
  result=run(str(signer),'verify','--print-certs',str(apk));assert CERT in result
  (out/f'certificate-{i}.txt').write_text(result)
+if os.environ.get('VOKANO_VALIDATION_MODE')=='clean':
+ # A separate fresh emulator: never erase the upgrade fixture to claim a clean install.
+ adb('install',str(candidate));adb('install',str(instrumentation))
+ installed=adb('shell','dumpsys','package',PACKAGE);(out/'clean-package.txt').write_text(installed)
+ assert 'versionCode=16 ' in installed and 'versionName=10.3' in installed
+ test('ProductionBaselineTest',production_mode='seed')
+ # ProductionBaselineTest asserts every exported table is empty before seeding
+ # synthetic backup fixtures, checks no demo records and exercises complete backup.
+ (out/'provenance.json').write_text(json.dumps(manifest,indent=2))
+ print('Permanent-signed 10.3 fresh install and empty-database/full-backup checks PASS',flush=True)
+ raise SystemExit(0)
 # Fresh emulator installs the original production APK. No app-data clearing or uninstall.
 adb('install',str(baseline));adb('install',str(instrumentation))
 test('V103UpgradeTest','seed');test('V103UpgradeTest','baseline-reopen')
