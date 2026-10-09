@@ -389,3 +389,20 @@ silently total them or add earlier damages to an instalment. No future index
 is required when the effective stop precedes the requested report date.
 Court findings, amount and due date are lawyer inputs. Bankruptcy, later altered
 judgments and combinations with partial payments remain unsupported.
+
+### 2026-10-09 tariff continuation
+
+Reopened official Qavanin record16814137751518820692, articles8/9/12/21.
+Final-by-value interpretation recovered in Vokalapress republication of advisory
+7/1404/104, dated1404/09/30:
+https://vokalapress.ir/در-مواردی-که-خواسته-یا-بهای-آن-در-دادگاه/
+The published response expressly distinguishes final-by-value proceedings from
+two-stage proceedings: no second first-stage percentage reduction. This is a
+REVIEWED_PUBLICATION, not direct official verification and not a binding ruling.
+No current jurisdiction threshold is encoded. Hand golden:500m rial claim ->
+50m rial for the explicit final-by-value pathway (not30m);15rial ->1.5rial
+rounded only at the end. Old v4 rejects this path as before.
+Article8 hand golden:family minimum5m * .6 *2 =6m at first instance;
+appeal4m. Article12(c) preserves the judgment fee of the selected stage.
+The engine does not resolve unsupported intersections, infer legal-aid status,
+or manufacture a statutory minimum for maximum-only categories.

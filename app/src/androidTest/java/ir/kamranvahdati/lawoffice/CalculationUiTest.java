@@ -280,6 +280,49 @@ public class CalculationUiTest {
         }catch(Exception e){throw new AssertionError(e);}});ins.waitForIdleSync();}
         finally{ins.runOnMainSync(()->{try{if(original[0]!=null)a.db.importJson(original[0]);}catch(Exception e){throw new AssertionError(e);}finally{a.finish();}});ins.waitForIdleSync();}
     }
+    @Test public void finalByValueAndAppointedTariffsKeepIndependentHistory()throws Exception{
+        Instrumentation ins=InstrumentationRegistry.getInstrumentation();Context c=ins.getTargetContext();
+        MainActivity a=(MainActivity)ins.startActivitySync(new Intent(c,MainActivity.class).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK|Intent.FLAG_ACTIVITY_CLEAR_TASK));ins.waitForIdleSync();final String[] original={null};
+        try{ins.runOnMainSync(()->{try{
+            original[0]=a.db.exportJson();OfficeCalculations repo=new OfficeCalculations(a.db);CalculationUi ui=new CalculationUi(a);ui.fee(true,null);
+            selectItem(a.page,"مالی؛ حکم بدوی قطعی از حیث بها، صدر ماده ۹");selectItem(a.page,"بدوی");
+            input(a.page,"بهای خواسته مالی یا مبلغ منتخب کل تعرفه در سایر دسته‌ها").setText("۵۰۰۰۰۰۰۰۰");
+            input(a.page,"توضیح مستند انتخاب مبلغ و مبنا").setText("synthetic statutory finality by value, not lapse of appeal time");
+            ((CheckBox)findText(a.page,"انطباق این دسته و نسخه تعرفه را بررسی کرده‌ام؛ این محاسبه فاقد عوامل ویژه پشتیبانی‌نشده است")).setChecked(true);
+            click(a.page,"محاسبه و نمایش نتیجه");click(a.page,"ذخیره محاسبه");
+            CalculationSnapshot first=repo.list(null).get(0);assertEquals("50,000,000 ریال",first.resultSnapshot.get("مبلغ"));
+            assertEquals("REVIEWED_PUBLICATION",first.inputSnapshot.get("opinionStatus"));
+            assertTrue(CalculationReport.text(first).contains("۶۰٪"));
+            click(a.page,"نسخه جدید / محاسبه مجدد");selectItem(a.page,"تجدیدنظر");
+            input(a.page,"علت تغییر نسبت به نسخه قبلی").setText("invalid appeal stage");
+            ((CheckBox)findText(a.page,"انطباق این دسته و نسخه تعرفه را بررسی کرده‌ام؛ این محاسبه فاقد عوامل ویژه پشتیبانی‌نشده است")).setChecked(true);
+            click(a.page,"محاسبه و نمایش نتیجه");assertNull(findText(a.page,"ذخیره محاسبه"));
+            // A separate scenario uses the category minimum, never the arbitrary free amount.
+            ui.fee(true,null);selectItem(a.page,"وکالت تسخیری یا معاضدتی؛ دو برابر حداقل مصرح");
+            selectItem(a.page,"بدوی");
+            try(java.io.InputStreamReader reader=new java.io.InputStreamReader(a.getAssets().open("calculation/tariff-1398-reviewed-v5.properties"),java.nio.charset.StandardCharsets.UTF_8)){
+                selectItem(a.page,new CalculationTariff.Rules(reader).ranges.get("FAMILY").label);
+            }
+            input(a.page,"بهای خواسته مالی یا مبلغ منتخب کل تعرفه در سایر دسته‌ها").setText("999999999");
+            input(a.page,"توضیح مستند انتخاب مبلغ و مبنا").setText("legal aid family fixture");
+            input(a.page,"مستند شرایط حالت ویژه").setText("appointment record and first-stage representation");
+            ((CheckBox)findText(a.page,"انطباق این دسته و نسخه تعرفه را بررسی کرده‌ام؛ این محاسبه فاقد عوامل ویژه پشتیبانی‌نشده است")).setChecked(true);
+            click(a.page,"محاسبه و نمایش نتیجه");click(a.page,"ذخیره محاسبه");
+            CalculationSnapshot aid=repo.list(null).get(0);assertEquals("6,000,000 ریال",aid.resultSnapshot.get("مبلغ"));
+            assertEquals("5000000",aid.inputSnapshot.get("amount"));assertEquals("RIAL",aid.inputSnapshot.get("currency"));
+            click(a.page,"نسخه جدید / محاسبه مجدد");selectItem(a.page,"تجدیدنظر");
+            input(a.page,"علت تغییر نسبت به نسخه قبلی").setText("appeal appointment fixture");
+            ((CheckBox)findText(a.page,"انطباق این دسته و نسخه تعرفه را بررسی کرده‌ام؛ این محاسبه فاقد عوامل ویژه پشتیبانی‌نشده است")).setChecked(true);
+            click(a.page,"محاسبه و نمایش نتیجه");click(a.page,"ذخیره محاسبه");
+            CalculationSnapshot next=repo.list(null).get(0);assertEquals(aid.id,next.previousSnapshotId);
+            assertEquals("4,000,000 ریال",next.resultSnapshot.get("مبلغ"));
+            a.db.importJson(a.db.exportJson());
+            assertEquals("50,000,000 ریال",repo.get(first.id).resultSnapshot.get("مبلغ"));
+            assertEquals("6,000,000 ریال",repo.get(aid.id).resultSnapshot.get("مبلغ"));
+            assertTrue(repo.get(next.id).inputSnapshot.get("_rulePackSnapshot").contains("special.APPOINTED_AID=200"));
+        }catch(Exception e){throw new AssertionError(e);}});ins.waitForIdleSync();}
+        finally{ins.runOnMainSync(()->{try{if(original[0]!=null)a.db.importJson(original[0]);}catch(Exception e){throw new AssertionError(e);}finally{a.finish();}});ins.waitForIdleSync();}
+    }
     @Test public void specialTariffPersistsExactSharesAndRevision()throws Exception{
         Instrumentation ins=InstrumentationRegistry.getInstrumentation();Context c=ins.getTargetContext();
         MainActivity a=(MainActivity)ins.startActivitySync(new Intent(c,MainActivity.class).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK|Intent.FLAG_ACTIVITY_CLEAR_TASK));ins.waitForIdleSync();final String[] original={null};

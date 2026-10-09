@@ -1,6 +1,6 @@
 # VOKANO 10.3 — Legal Calculation Center
 
-Status: IN PROGRESS, NOT A RELEASE. Version metadata remains 10.2 / 15.
+Status: IN PROGRESS, NOT A FINAL RELEASE. Current version metadata is 10.3 / 16; schema 16. Earlier entries below are chronological history, not the current state.
 
 ## Verified starting point (2026-10-05 UTC)
 
@@ -521,3 +521,29 @@ Requested/effective dates and the scope of each result are preserved. New
 numerical16 PASS; added Android cutoff/future-report-date/instalment/revision/
 backup test pending. Previous numerical delay suites still pass. Next publish
 this tree and verify CI; then remaining scope and final changed-candidate signing.
+
+## Resume 2026-10-09: remaining tariff pathways
+
+Verified GitHub branch codex/v10.3 at d349588cf80ae75a77521749d6d4171e70e8f1cf;
+fresh local clone matches and older dirty worktrees were left untouched.
+CI37846270646 completed SUCCESS: foundation113547819873,
+API30 113547820212 and API35 113547820297. Do not repeat unchanged tests.
+Application ID ir.kamranvahdati.lawoffice, version10.3/code16, schema16.
+
+Added immutable tariff v5 with final-by-value, article8 appointed/legal-aid,
+and article12(c) disposition. Recovered published advisory7/1404/104 dated
+1404/09/30, resolving the previously open article9/21 split: the final-by-value
+path retains the full 10%, without another 60% multiplier. Explicit finality
+basis is required; no jurisdiction threshold or appeal availability inferred.
+Publication provenance is preserved and is not labelled official verification.
+Article8 uses twice the identified minimum at the selected stage, not an
+arbitrary selected fee; unknown minima and incompatible services are blocked.
+Old rule assets and saved results remain immutable. No migration/signing change.
+
+Local tariff suite154 PASS; diff whitespace check PASS. Added Android UI tests
+for wrong-stage rejection, canonical minimum, independent saved results,
+revision and backup round-trip. This changed candidate's Android build/tests
+are pending publication/CI. Previous permanent-signed candidate is older than
+this source and is not a final release. Next: verify changed CI, continue
+remaining special tariff intersections and wider injury/combination coverage,
+then sign final tree with the original key and validate installed upgrade.

@@ -15,10 +15,10 @@ import java.util.Properties;
  * Adoption date is metadata, NOT an inferred effective date.
  */
 final class CalculationTariff {
-    static final String ENGINE_VERSION = "tariff-math/4";
+    static final String ENGINE_VERSION = "tariff-math/5";
     enum Stage { WHOLE, FIRST, APPEAL, CIVIL_CASSATION, PROSECUTOR }
-    enum Disposition { ORDINARY, ANNUL_BEFORE_DEFENSE, REJECT_AFTER_DEFENSE, APPEAL_DROP_BEFORE_DEFENSE, APPEAL_DROP_AFTER_DEFENSE }
-    enum Special { NONE, SETTLEMENT, EQUAL_COUNSEL, MULTIPLE_CHARGES, CERTIFIED_SPECIALTY }
+    enum Disposition { ORDINARY, ANNUL_BEFORE_DEFENSE, REJECT_AFTER_DEFENSE, APPEAL_DROP_BEFORE_DEFENSE, APPEAL_DROP_AFTER_DEFENSE, NONHEARING_OR_RETRIAL_REFUSAL }
+    enum Special { NONE, SETTLEMENT, EQUAL_COUNSEL, MULTIPLE_CHARGES, CERTIFIED_SPECIALTY, APPOINTED_AID }
     enum Family { CIVIL, CRIMINAL, SERVICE }
 
     static final class Band {
@@ -52,7 +52,8 @@ final class CalculationTariff {
         final Map<Special, CalculationArithmetic.Fraction> specialFactors;
         final List<Band> bands;
         final Map<String, Range> ranges;
-        final CalculationArithmetic.Fraction civilFirst, civilAppeal;
+        final CalculationArithmetic.Fraction civilFirst, civilAppeal, financialFinal;
+        final String finalOpinionUrl, finalOpinionNumber;
         final Long enforcementMinimum;
         final CalculationArithmetic.Fraction enforcementMaximumRate;
         final CalculationArithmetic.Fraction criminalProsecutor, criminalFirst, criminalAppeal;
@@ -93,11 +94,18 @@ final class CalculationTariff {
             dispositions=Collections.unmodifiableMap(ds);
             Map<Special, CalculationArithmetic.Fraction> sf=new LinkedHashMap<>();
             for(Special special:Special.values())if(special!=Special.NONE&&p.containsKey("special."+special.name())) {
-                CalculationArithmetic.Fraction factor=percent(p,"special."+special.name());
+                CalculationArithmetic.Fraction factor=special==Special.APPOINTED_AID?
+                    CalculationArithmetic.Fraction.decimal(CalculationArithmetic.decimal(required(p,"special."+special.name()))).multiply(CalculationArithmetic.Fraction.of(1,100)):
+                    percent(p,"special."+special.name());
                 if(factor.numerator.signum()<=0)throw invalid("ضریب ویژه باید مثبت باشد");
                 sf.put(special,factor);
             }
             specialFactors=Collections.unmodifiableMap(sf);
+            financialFinal=p.containsKey("financial.final.percent")?percent(p,"financial.final.percent"):null;
+            finalOpinionUrl=financialFinal==null?"":required(p,"financial.final.opinion.url");
+            finalOpinionNumber=financialFinal==null?"":required(p,"financial.final.opinion.number");
+            if(financialFinal!=null&&(financialFinal.numerator.signum()<=0||financialFinal.numerator.compareTo(financialFinal.denominator)>0))
+                throw invalid("نرخ حکم قطعی باید مثبت و حداکثر صد درصد باشد");
             civilFirst = percent(p, "civil.first"); civilAppeal = percent(p, "civil.appeal");
             criminalProsecutor = percent(p, "criminal.prosecutor");
             criminalFirst = percent(p, "criminal.first"); criminalAppeal = percent(p, "criminal.appeal");
@@ -151,7 +159,7 @@ final class CalculationTariff {
         }
     }
 
-    /** Article 9 progressive branch ONLY: final-by-value, family, dispositions and
+    /** Article 9 progressive and explicit final-by-value branches. Family, dispositions and
      * specialist/multiple-counsel adjustments require their separate reviewed pathways.
      * The caller must record why this rule version and category apply to this matter.
      */
@@ -159,7 +167,17 @@ final class CalculationTariff {
             boolean finalByValue, RoundingMode rounding) {
         require(rules, stage, rounding);
         String basis = CalculationReference.required(applicabilityBasis, "مبنای انطباق تعرفه با پرونده");
-        if (finalByValue) throw invalid("شاخه حکم قطعی از حیث بها نیازمند بررسی مستقل مواد ۹ و ۲۱ است");
+        if(finalByValue) {
+            if(rules.financialFinal==null)throw invalid("بسته تاریخی فاقد شاخه حکم قطعی از حیث بها است");
+            if(stage!=Stage.WHOLE&&stage!=Stage.FIRST)throw invalid("حکم قطعی از حیث بها در این مسیر مرحله تجدیدنظر یا فرجام ندارد");
+            if(claimRials<=0)throw invalid("بهای خواسته باید مشخص و مثبت باشد");
+            CalculationArithmetic.Fraction exact=CalculationArithmetic.Fraction.of(claimRials,1).multiply(rules.financialFinal);
+            List<String> steps=new ArrayList<>();
+            steps.add("صدر ماده ۹؛ قطعیت از حیث بها به تصریح کاربر: "+claimRials+" × "+rules.financialFinal+" = "+exact+" ریال");
+            steps.add("کل حق‌الوکاله این مسیر؛ سهم ۶۰٪ دوباره اعمال نمی‌شود. نظریه مشورتی بازنشرشده "+rules.finalOpinionNumber+"؛ "+rules.finalOpinionUrl);
+            steps.add("نصاب صلاحیت یا قطعیت از روی مبلغ حدس زده نشده است؛ این فرض با صرف قطعیت ناشی از عدم اعتراض متفاوت است.");
+            return new Result(rules,"9-final",stage,exact,basis,steps,rounding);
+        }
         if (claimRials <= 0) throw invalid("بهای خواسته باید مشخص و مثبت باشد");
         CalculationArithmetic.Fraction amount = CalculationArithmetic.Fraction.of(0, 1);
         List<String> steps = new ArrayList<>(); long previous = 0;
@@ -236,7 +254,10 @@ final class CalculationTariff {
         if(!("FINANCIAL".equals(category)||"FAMILY".equals(category)||"NONFINANCIAL".equals(category)))
             throw invalid("این مسیر قرار فقط برای دعوای مالی، خانواده یا غیرمالی دادگاه حقوقی است");
         boolean appeal=selected==Disposition.APPEAL_DROP_BEFORE_DEFENSE||selected==Disposition.APPEAL_DROP_AFTER_DEFENSE;
-        if(base.stage!=(appeal?Stage.APPEAL:Stage.FIRST))throw invalid("مرحله انتخابی با نوع قرار منطبق نیست");
+        if(selected==Disposition.NONHEARING_OR_RETRIAL_REFUSAL) {
+            if(base.stage!=Stage.FIRST&&base.stage!=Stage.APPEAL&&base.stage!=Stage.CIVIL_CASSATION)
+                throw invalid("برای قرار بند پ ماده ۱۲ مرحله رسیدگی مشخص را انتخاب کنید");
+        } else if(base.stage!=(appeal?Stage.APPEAL:Stage.FIRST))throw invalid("مرحله انتخابی با نوع قرار منطبق نیست");
         CalculationArithmetic.Fraction factor=rules.dispositions.get(selected);
         if(factor==null)throw invalid("بسته تاریخی فاقد قاعده این قرار است");
         CalculationArithmetic.Fraction exact=base.exactAmount;
@@ -276,6 +297,28 @@ final class CalculationTariff {
                     throw invalid("تعدد اتهام نیازمند دسته جرم اشد و دست‌کم دو اتهام است");
                 factor=CalculationArithmetic.Fraction.of(1,1).add(factor.multiply(CalculationArithmetic.Fraction.of((long)count-1,1)));
                 article="14-note3";break;
+            case APPOINTED_AID:
+                if(count!=1||range==null||range.minimum==null)
+                    throw invalid("وکالت تسخیری یا معاضدتی نیازمند دسته دارای حداقل مصرح و تعداد یک است");
+                // The UI builds the base from the statutory minimum; never double an
+                // arbitrary selected fee. Verify the exact stage base here as well.
+                CalculationArithmetic.Fraction minimumWhole=CalculationArithmetic.Fraction.of(range.minimum,1);
+                boolean matches=false;
+                if(range.family==Family.CIVIL) {
+                    CalculationArithmetic.Fraction expected=minimumWhole.multiply(share(rules,range.family,base.stage,true,false));
+                    matches=expected.toString().equals(base.exactAmount.toString());
+                } else if(range.family==Family.CRIMINAL) {
+                    // Stage availability is retained by ranged(); consider all valid
+                    // assignments without inferring the case's procedural facts.
+                    for(boolean prosecutor:new boolean[]{true,false})for(boolean finalTrial:new boolean[]{true,false}) {
+                        try {
+                            CalculationArithmetic.Fraction expected=minimumWhole.multiply(share(rules,range.family,base.stage,prosecutor,finalTrial));
+                            if(expected.toString().equals(base.exactAmount.toString()))matches=true;
+                        }catch(IllegalArgumentException ignored){}
+                    }
+                }
+                if(!matches)throw invalid("مبنای وکالت تسخیری یا معاضدتی باید حداقل تعرفه همان مرحله باشد");
+                article="8";break;
             case CERTIFIED_SPECIALTY:
                 if(count!=1)throw invalid("در تخصص تعداد باید یک باشد");
                 factor=CalculationArithmetic.Fraction.of(1,1).add(factor);

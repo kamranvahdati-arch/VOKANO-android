@@ -58,7 +58,7 @@ public final class CalculationTariffGoldenTest {
         rejects(()->financial(r,0,CalculationTariff.Stage.WHOLE));
         rejects(()->financial(r,-1,CalculationTariff.Stage.WHOLE));
         rejects(()->financial(r,1,CalculationTariff.Stage.PROSECUTOR));
-        rejects(()->CalculationTariff.financial(r,1,CalculationTariff.Stage.WHOLE,BASIS,true,ROUND));
+        check(CalculationTariff.financial(r,1,CalculationTariff.Stage.WHOLE,BASIS,true,ROUND).exactRials.equals("1/10"));
         rejects(()->CalculationTariff.financial(r,1,CalculationTariff.Stage.WHOLE,"",false,ROUND));
         rejects(()->financial(null,1,CalculationTariff.Stage.WHOLE));
         check(range(r,"FAMILY",5000000,"1",CalculationTariff.Stage.FIRST,true,false).rials == 3000000);
@@ -157,6 +157,33 @@ public final class CalculationTariffGoldenTest {
         rejects(()->CalculationTariff.special(v3,financial(v3,500000000,CalculationTariff.Stage.WHOLE),"FINANCIAL",CalculationTariff.Special.CERTIFIED_SPECIALTY,1,BASIS,CalculationTariff.Disposition.ORDINARY));
         rejects(()->CalculationTariff.special(v3,whole,"FINANCIAL",CalculationTariff.Special.NONE,1,"",CalculationTariff.Disposition.ORDINARY));
         check(CalculationTariff.special(r,whole,"FINANCIAL",CalculationTariff.Special.NONE,1,"",CalculationTariff.Disposition.ORDINARY)==whole);
+        // Article 9 final-by-value: 10% with no second 60% stage reduction.
+        for(CalculationTariff.Stage stage:new CalculationTariff.Stage[]{CalculationTariff.Stage.WHOLE,CalculationTariff.Stage.FIRST}) {
+            check(CalculationTariff.financial(r,500000000,stage,"explicit final-by-value fixture",true,ROUND).rials==50000000);
+            check(CalculationTariff.financial(r,15,stage,BASIS,true,ROUND).rials==2);
+        }
+        rejects(()->CalculationTariff.financial(r,500000000,CalculationTariff.Stage.APPEAL,BASIS,true,ROUND));
+        rejects(()->CalculationTariff.financial(r,500000000,CalculationTariff.Stage.CIVIL_CASSATION,BASIS,true,ROUND));
+        rejects(()->CalculationTariff.financial(r,0,CalculationTariff.Stage.FIRST,BASIS,true,ROUND));
+        rejects(()->CalculationTariff.financial(r,1,CalculationTariff.Stage.FIRST,"",true,ROUND));
+        check(CalculationTariff.financial(r,Long.MAX_VALUE,CalculationTariff.Stage.FIRST,BASIS,true,ROUND).rials==922337203685477581L);
+        CalculationTariff.Rules v4=new CalculationTariff.Rules(Files.newBufferedReader(Paths.get("app/src/main/assets/calculation/tariff-1398-reviewed-v4.properties"),StandardCharsets.UTF_8));
+        rejects(()->CalculationTariff.financial(v4,500000000,CalculationTariff.Stage.FIRST,BASIS,true,ROUND));
+        check(financial(v4,500000000,CalculationTariff.Stage.FIRST).rials==24000000);
+        // Article 8: twice the category minimum with the existing stage assignment.
+        CalculationTariff.Result minFamily=range(r,"FAMILY",5000000,"1",CalculationTariff.Stage.FIRST,true,false);
+        check(CalculationTariff.special(r,minFamily,"FAMILY",CalculationTariff.Special.APPOINTED_AID,1,BASIS,CalculationTariff.Disposition.ORDINARY).rials==6000000);
+        CalculationTariff.Result minCriminal=range(r,"CRIMINAL_TWO_GRADE6",5000000,"1",CalculationTariff.Stage.FIRST,false,true);
+        check(CalculationTariff.special(r,minCriminal,"CRIMINAL_TWO_GRADE6",CalculationTariff.Special.APPOINTED_AID,1,BASIS,CalculationTariff.Disposition.ORDINARY).rials==10000000);
+        rejects(()->CalculationTariff.special(r,range(r,"FAMILY",10000000,"1",CalculationTariff.Stage.FIRST,true,false),"FAMILY",CalculationTariff.Special.APPOINTED_AID,1,BASIS,CalculationTariff.Disposition.ORDINARY));
+        rejects(()->CalculationTariff.special(r,whole,"FINANCIAL",CalculationTariff.Special.APPOINTED_AID,1,BASIS,CalculationTariff.Disposition.ORDINARY));
+        rejects(()->CalculationTariff.special(r,minFamily,"FAMILY",CalculationTariff.Special.APPOINTED_AID,1,"",CalculationTariff.Disposition.ORDINARY));
+        rejects(()->CalculationTariff.special(r,minFamily,"FAMILY",CalculationTariff.Special.APPOINTED_AID,2,BASIS,CalculationTariff.Disposition.ORDINARY));
+        rejects(()->CalculationTariff.special(v4,range(v4,"FAMILY",5000000,"1",CalculationTariff.Stage.FIRST,true,false),"FAMILY",CalculationTariff.Special.APPOINTED_AID,1,BASIS,CalculationTariff.Disposition.ORDINARY));
+        check(CalculationTariff.disposition(r,firstStage,"FINANCIAL",CalculationTariff.Disposition.NONHEARING_OR_RETRIAL_REFUSAL).rials==24000000);
+        check(CalculationTariff.disposition(r,appealStage,"FINANCIAL",CalculationTariff.Disposition.NONHEARING_OR_RETRIAL_REFUSAL).rials==16000000);
+        rejects(()->CalculationTariff.disposition(r,whole,"FINANCIAL",CalculationTariff.Disposition.NONHEARING_OR_RETRIAL_REFUSAL));
+        rejects(()->CalculationTariff.disposition(v4,financial(v4,500000000,CalculationTariff.Stage.FIRST),"FINANCIAL",CalculationTariff.Disposition.NONHEARING_OR_RETRIAL_REFUSAL));
         System.out.println("CalculationTariffGoldenTest: " + assertions + " assertions passed (limited tariff coverage)");
     }
 }
