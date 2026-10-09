@@ -61,6 +61,7 @@ final class CalculationReport {
         switch(key){
             case "insolvencyDate":return "تاریخ ثبوت اعسار";case "judgmentBasis":return "مستند حکم";case "indexedEnd":return "پایان مؤثر تعدیل";
             case "paymentMethod":return "روش پرداخت";case "payments":return "پرداخت‌های مستند";case "paymentSource":return "منبع تخصیص پرداخت";
+            case "independentRows":return "اقلام مستقل و مستندات";
             case "minimumBasis":return "مبنای حداقل تعرفه";case "finalityBasis":return "مستند قطعیت از حیث بها";case "opinionStatus":return "وضعیت منبع نظریه";case "opinionSource":return "منبع نظریه مشورتی";
             case "tariffSpecial":return "حالت ویژه تعرفه";case "specialCount":return "تعداد وکلا یا اتهام‌ها";
             case "specialBasis":return "مستند شرایط حالت ویژه";case "resultScope":return "دامنه مبلغ نتیجه";

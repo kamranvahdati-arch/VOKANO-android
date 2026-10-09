@@ -280,6 +280,34 @@ public class CalculationUiTest {
         }catch(Exception e){throw new AssertionError(e);}});ins.waitForIdleSync();}
         finally{ins.runOnMainSync(()->{try{if(original[0]!=null)a.db.importJson(original[0]);}catch(Exception e){throw new AssertionError(e);}finally{a.finish();}});ins.waitForIdleSync();}
     }
+    @Test public void independentAssessedAwardsRequireFindingAndSurviveBackup()throws Exception{
+        Instrumentation ins=InstrumentationRegistry.getInstrumentation();Context c=ins.getTargetContext();
+        MainActivity a=(MainActivity)ins.startActivitySync(new Intent(c,MainActivity.class).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK|Intent.FLAG_ACTIVITY_CLEAR_TASK));ins.waitForIdleSync();final String[] original={null};
+        try{ins.runOnMainSync(()->{try{
+            original[0]=a.db.exportJson();OfficeCalculations repo=new OfficeCalculations(a.db);new CalculationUi(a).body(false,null);
+            selectItem(a.page,"جمع درصدهای مستقل تعیین‌شده؛ با احراز عدم تداخل");
+            input(a.page,"اقلام مستقل؛ هر سطر: شرح متمایز | درصد | مستند").setText("left | 2.5 | award1\nright | 1 | award2");
+            input(a.page,"شرح صدمه و عضو یا منفعت").setText("two independent assessed awards fixture");
+            input(a.page,"تاریخ وقوع صدمه").setText("1405/01/01");input(a.page,"تاریخ پرداخت / ارزش‌گذاری انتخابی").setText("1405/02/01");
+            input(a.page,"مرجع، شماره و تاریخ مستند تعیین مبلغ یا درصد").setText("judicial non-overlap finding fixture");
+            input(a.page,"مستند انتخاب تاریخ ارزش‌گذاری").setText("payment-date fixture");
+            click(a.page,"محاسبه و نمایش نتیجه");assertNull(findText(a.page,"ذخیره محاسبه"));
+            String confirmation="درصد هر قلم از دیه کامل عادی و استقلال آن در تصمیم مرجع صالح مشخص است؛ هیچ قلم تداخلی، سرایت‌یافته، تکراری یا تغلیظ‌شده در جمع نیست";
+            ((CheckBox)findText(a.page,confirmation)).setChecked(true);
+            click(a.page,"محاسبه و نمایش نتیجه");click(a.page,"ذخیره محاسبه");
+            CalculationSnapshot first=repo.list(null).get(0);assertEquals("735,000,000 ریال",first.resultSnapshot.get("مبلغ"));
+            assertEquals("INDEPENDENT_TOTAL",first.inputSnapshot.get("bodyMode"));assertTrue(CalculationReport.text(first).contains("award2"));
+            click(a.page,"نسخه جدید / محاسبه مجدد");
+            input(a.page,"اقلام مستقل؛ هر سطر: شرح متمایز | درصد | مستند").setText("left | 100 | award1\nright | 100 | award2");
+            input(a.page,"علت تغییر نسبت به نسخه قبلی").setText("revised separate awards");
+            ((CheckBox)findText(a.page,confirmation)).setChecked(true);
+            click(a.page,"محاسبه و نمایش نتیجه");click(a.page,"ذخیره محاسبه");
+            CalculationSnapshot next=repo.list(null).get(0);assertEquals(first.id,next.previousSnapshotId);assertEquals("42,000,000,000 ریال",next.resultSnapshot.get("مبلغ"));
+            a.db.importJson(a.db.exportJson());assertEquals("735,000,000 ریال",repo.get(first.id).resultSnapshot.get("مبلغ"));
+            assertEquals("42,000,000,000 ریال",repo.get(next.id).resultSnapshot.get("مبلغ"));
+        }catch(Exception e){throw new AssertionError(e);}});ins.waitForIdleSync();}
+        finally{ins.runOnMainSync(()->{try{if(original[0]!=null)a.db.importJson(original[0]);}catch(Exception e){throw new AssertionError(e);}finally{a.finish();}});ins.waitForIdleSync();}
+    }
     @Test public void finalByValueAndAppointedTariffsKeepIndependentHistory()throws Exception{
         Instrumentation ins=InstrumentationRegistry.getInstrumentation();Context c=ins.getTargetContext();
         MainActivity a=(MainActivity)ins.startActivitySync(new Intent(c,MainActivity.class).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK|Intent.FLAG_ACTIVITY_CLEAR_TASK));ins.waitForIdleSync();final String[] original={null};

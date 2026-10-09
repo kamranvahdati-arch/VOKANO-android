@@ -27,6 +27,23 @@ public final class CalculationBodyTest {
         rejects(()->CalculationBodyMath.assessedAmount("9223372036854775807",CalculationArithmetic.Currency.TOMAN,"fixture"));
         rejects(()->CalculationBodyMath.assessedAmount("1.1",CalculationArithmetic.Currency.RIAL,"fixture"));
         rejects(()->CalculationBodyMath.assessedAmount("100",CalculationArithmetic.Currency.RIAL,""));
+        String rows="left injury | ۲٫۵ | judgment item1\nright injury | ۱ | judgment item2";
+        CalculationBodyMath.IndependentTotal total=CalculationBodyMath.independentPercentages(rate,"1405/01/01",rows,"independence finding",true);
+        check(total.exact.roundedRials(RoundingMode.HALF_UP)==735000000L);check(total.steps.size()==3);
+        check(CalculationBodyMath.independentPercentages(rate,"1405/01/01","a | 100 | item1\nb | 100 | item2","fixture",true).exact.roundedRials(RoundingMode.HALF_UP)==42000000000L);
+        // .42 + .42 = .84 -> 1 rial, not the sum of separately rounded zeroes.
+        check(CalculationBodyMath.independentPercentages(rate,"1405/01/01","a | 0.000000002 | item1\nb | 0.000000002 | item2","fixture",true).exact.roundedRials(RoundingMode.HALF_UP)==1);
+        rejects(()->CalculationBodyMath.independentPercentages(rate,"1405/01/01",rows,"fixture",false));
+        rejects(()->CalculationBodyMath.independentPercentages(rate,"1405/01/01",rows,"",true));
+        rejects(()->CalculationBodyMath.independentPercentages(rate,"1404/01/01",rows,"fixture",true));
+        rejects(()->CalculationBodyMath.independentPercentages(rate,"1405/01/01","a | 1 | item1","fixture",true));
+        rejects(()->CalculationBodyMath.independentPercentages(rate,"1405/01/01","a | 1 | item1\na | 2 | item2","fixture",true));
+        rejects(()->CalculationBodyMath.independentPercentages(rate,"1405/01/01","a | 1 | item1\nb | 2 | ","fixture",true));
+        rejects(()->CalculationBodyMath.independentPercentages(rate,"1405/01/01","a | 0 | item1\nb | 2 | item2","fixture",true));
+        rejects(()->CalculationBodyMath.independentPercentages(rate,"1405/01/01","a | -1 | item1\nb | 2 | item2","fixture",true));
+        rejects(()->CalculationBodyMath.independentPercentages(rate,"1405/01/01","a | 101 | item1\nb | 2 | item2","fixture",true));
+        rejects(()->CalculationBodyMath.independentPercentages(rate,"1405/01/01","a | 1 | item1\nb | 2","fixture",true));
+        check(CalculationBodyMath.independentPercentages(rate,"1405/01/01",rows+"\n","fixture",true).exact.toString().equals(total.exact.toString()));
         System.out.println("CalculationBodyTest: "+checks+" checks passed");
     }
 }

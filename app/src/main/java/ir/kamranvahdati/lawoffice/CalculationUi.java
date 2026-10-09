@@ -206,14 +206,17 @@ final class CalculationUi {
         final CalculationPrescribedBody.Rules prescribedRules;
         try(InputStreamReader reader=new InputStreamReader(a.getAssets().open("calculation/prescribed-head-1392-v1.properties"),StandardCharsets.UTF_8)){prescribedRules=new CalculationPrescribedBody.Rules(reader);}
         catch(Exception e){a.toast(message(e));return;}
-        Spinner mode=pick("نوع ورودی",arsh?new String[]{"درصد اعلام‌شده از دیه کامل عادی","مبلغ قطعی اعلام‌شده؛ بدون تعدیل خودکار"}:new String[]{"درصد اعلام‌شده از دیه کامل عادی","مبلغ قطعی اعلام‌شده؛ بدون تعدیل خودکار","جدول صدمات مستقل سر و صورت؛ ماده ۷۰۹"});
-        String previousMode=previous(prior,"bodyMode","PERCENT");mode.setSelection("PRESCRIBED".equals(previousMode)&&!arsh?2:"AMOUNT".equals(previousMode)?1:0);
+        Spinner mode=pick("نوع ورودی",arsh?new String[]{"درصد اعلام‌شده از دیه کامل عادی","مبلغ قطعی اعلام‌شده؛ بدون تعدیل خودکار"}:new String[]{"درصد اعلام‌شده از دیه کامل عادی","مبلغ قطعی اعلام‌شده؛ بدون تعدیل خودکار","جدول صدمات مستقل سر و صورت؛ ماده ۷۰۹","جمع درصدهای مستقل تعیین‌شده؛ با احراز عدم تداخل"});
+        String previousMode=previous(prior,"bodyMode","PERCENT");mode.setSelection("INDEPENDENT_TOTAL".equals(previousMode)&&!arsh?3:"PRESCRIBED".equals(previousMode)&&!arsh?2:"AMOUNT".equals(previousMode)?1:0);
         final List<String> injuryIds=new ArrayList<>(prescribedRules.injuries.keySet());
         final Spinner injuryPick;
         if(!arsh){List<String> injuryLabels=new ArrayList<>();for(CalculationPrescribedBody.Injury i:prescribedRules.injuries.values())injuryLabels.add(i.label);
             injuryPick=pick("صدمه؛ فقط برای مسیر جدول ماده ۷۰۹",injuryLabels.toArray(new String[0]));injuryPick.setSelection(Math.max(0,injuryIds.indexOf(previous(prior,"prescribedInjury","HARISA"))));}
         else injuryPick=null;
         EditText value=field("درصد یا مبلغ اعلام‌شده",previous(prior,"assessedValue",""));
+        EditText independentRows=arsh?null:field("اقلام مستقل؛ هر سطر: شرح متمایز | درصد | مستند",previous(prior,"independentRows",""));
+        if(independentRows!=null){independentRows.setSingleLine(false);independentRows.setMinLines(3);}
+        CheckBox independentChecked=arsh?null:confirm("درصد هر قلم از دیه کامل عادی و استقلال آن در تصمیم مرجع صالح مشخص است؛ هیچ قلم تداخلی، سرایت‌یافته، تکراری یا تغلیظ‌شده در جمع نیست");
         Spinner currency=pick("واحد مبلغ؛ فقط مسیر مبلغ قطعی",new String[]{"ریال","تومان"});currency.setSelection("TOMAN".equals(previous(prior,"currency","RIAL"))?1:0);
         EditText injury=field("شرح صدمه و عضو یا منفعت",previous(prior,"injury",""));
         EditText occurred=field("تاریخ وقوع صدمه",previous(prior,"occurredDate",""));a.bindJalaliPicker(occurred);
@@ -224,10 +227,11 @@ final class CalculationUi {
         EditText reason=prior==null?null:field("علت تغییر نسبت به نسخه قبلی","");
         CheckBox checked=confirm("مقدار توسط مرجع صالح تعیین شده و مبنای درصد، دیه کامل عادی است؛ این ورودی یک صدمه مستقل و بدون تغلیظ است");
         CheckBox prescribedChecked=arsh?null:confirm("تشخیص مستند سر یا صورت و استقلال این صدمه بررسی شده؛ فاقد فوت، تداخل، آثار اضافه و حکم خاص است");
-        a.page.addView(a.info("دامنه محاسبه",(arsh?CalculationSnapshot.ARSH_WARNING+"\n":"")+"جدول ماده ۷۰۹ فقط هفت عنوان حارصه تا منقله سر و صورت را پوشش می‌دهد. جراحات بدن، مأمومه، دامغه، آثار باقی‌مانده و موارد تداخل نیازمند مسیر دیگرند. نرم‌افزار تشخیص صدمه، مسئول پرداخت یا تغلیظ را تعیین نمی‌کند. درصد از دیه عضو، تعدد صدمات، فوت با شرایط تغلیظ و استثناهای ارزش‌گذاری در این مسیر قابل محاسبه خودکار نیستند. سال فاقد نرخ جایگزین نمی‌شود."));
+        a.page.addView(a.info("دامنه محاسبه",(arsh?CalculationSnapshot.ARSH_WARNING+"\n":"")+"جدول ماده ۷۰۹ فقط هفت عنوان حارصه تا منقله سر و صورت را پوشش می‌دهد. جراحات بدن، مأمومه، دامغه، آثار باقی‌مانده و موارد تداخل نیازمند مسیر دیگرند. نرم‌افزار تشخیص صدمه، مسئول پرداخت یا تغلیظ را تعیین نمی‌کند. جمع مستقل تنها برای درصدهای جداگانه تعیین‌شده و پس از احراز عدم تداخل در مستند قضایی است. درصد از دیه عضو، فوت با شرایط تغلیظ و استثناهای ارزش‌گذاری در این مسیر قابل محاسبه خودکار نیستند. سال فاقد نرخ جایگزین نمی‌شود."));
         button("محاسبه و نمایش نتیجه",()->{try{
             boolean prescribed=!arsh&&mode.getSelectedItemPosition()==2;
-            if(prescribed?!prescribedChecked.isChecked():!checked.isChecked())throw new IllegalArgumentException("مستند و دامنه محاسبه را تأیید کنید");
+            boolean independent=!arsh&&mode.getSelectedItemPosition()==3;
+            if(independent?!independentChecked.isChecked():prescribed?!prescribedChecked.isChecked():!checked.isChecked())throw new IllegalArgumentException("مستند و دامنه محاسبه را تأیید کنید");
             String date=CalculationReference.date(effective.getText().toString()),event=CalculationReference.date(occurred.getText().toString());
             if(date.compareTo(event)<0)throw new IllegalArgumentException("تاریخ ارزش‌گذاری پیش از وقوع صدمه است");
             String assessment=CalculationReference.required(basis.getText().toString(),"مستند تعیین مبلغ یا درصد");
@@ -235,7 +239,11 @@ final class CalculationUi {
             boolean percent=mode.getSelectedItemPosition()==0;String entered=value.getText().toString();
             List<CalculationReference> refs=new ArrayList<>();List<String> steps=new ArrayList<>(),warnings=new ArrayList<>();
             long money;String data="assessed-fixed-amount",exact;
-            if(prescribed){CalculationReference rate=bodyRate();String id=injuryIds.get(injuryPick.getSelectedItemPosition());
+            if(independent){CalculationReference rate=bodyRate();
+                CalculationBodyMath.IndependentTotal result=CalculationBodyMath.independentPercentages(rate,date,independentRows.getText().toString(),assessment,independentChecked.isChecked());
+                money=result.exact.roundedRials(RoundingMode.HALF_UP);exact=result.exact.toString();refs.add(rate);data=rate.version;
+                steps.addAll(result.steps);warnings.add("جمع صرفاً بر مبنای تصمیم مستند مرجع درباره استقلال اقلام است؛ نرم‌افزار تداخل موضوع مواد ۵۳۸ تا ۵۴۸، تفاوت دیه و تعهد صندوق یا آثار سرایت را تشخیص نمی‌دهد.");
+            }else if(prescribed){CalculationReference rate=bodyRate();String id=injuryIds.get(injuryPick.getSelectedItemPosition());
                 CalculationArithmetic.Fraction result=CalculationPrescribedBody.calculate(prescribedRules,id,rate,date,assessment,true);
                 money=result.roundedRials(RoundingMode.HALF_UP);exact=result.toString();refs.add(rate);data=rate.version+" / "+prescribedRules.version;
                 steps.add(prescribedRules.injuries.get(id).label+"؛ ماده ۷۰۹: "+rate.value+" × "+prescribedRules.injuries.get(id).ratio+" = "+exact+" ریال");
@@ -246,9 +254,10 @@ final class CalculationUi {
             }else{money=CalculationBodyMath.assessedAmount(entered,unit,assessment);exact=money+"/1";steps.add("تبدیل دقیق مبلغ اعلام‌شده به ریال؛ بدون تعدیل سالانه یا تغلیظ");}
             Map<String,String> inputs=new LinkedHashMap<>(),results=new LinkedHashMap<>();
             Long caseId=casePick.getSelectedItemPosition()==0?null:cases.get(casePick.getSelectedItemPosition()-1).id;
-            inputs.put("title",title.getText().toString());inputs.put("caseId",caseId==null?"":caseId.toString());inputs.put("bodyMode",prescribed?"PRESCRIBED":percent?"PERCENT":"AMOUNT");
+            inputs.put("title",title.getText().toString());inputs.put("caseId",caseId==null?"":caseId.toString());inputs.put("bodyMode",independent?"INDEPENDENT_TOTAL":prescribed?"PRESCRIBED":percent?"PERCENT":"AMOUNT");
+            if(independent){inputs.put("independentRows",independentRows.getText().toString());inputs.put("scopeConfirmed","درصدهای مستقل تعیین‌شده از دیه کامل عادی؛ عدم تداخل با مستند مرجع صالح");}
             if(prescribed){inputs.put("prescribedInjury",injuryIds.get(injuryPick.getSelectedItemPosition()));inputs.put("_rulePackSnapshot",prescribedRules.serialized);inputs.put("sourceTitle",prescribedRules.title);inputs.put("scopeConfirmed","صدمه مستقل سر یا صورت؛ فاقد عوامل خاص، با تأیید کاربر");}
-            inputs.put("assessedValue",prescribed?"":entered);inputs.put("currency",unit.name());inputs.put("injury",CalculationReference.required(injury.getText().toString(),"شرح صدمه"));
+            inputs.put("assessedValue",prescribed||independent?"":entered);inputs.put("currency",unit.name());inputs.put("injury",CalculationReference.required(injury.getText().toString(),"شرح صدمه"));
             inputs.put("occurredDate",event);inputs.put("effectiveDate",date);inputs.put("assessment",assessment);inputs.put("expertOpinion",opinion.getText().toString());
             inputs.put("dateBasis",CalculationReference.required(dateBasis.getText().toString(),"مستند تاریخ ارزش‌گذاری"));
             inputs.put("sourceUrl","https://natlex.ilo.org/dyn/natlex2/natlex2/files/download/103202/penal%20code.pdf");
@@ -257,7 +266,7 @@ final class CalculationUi {
             long now=Math.max(System.currentTimeMillis(),prior==null?0:prior.createdAt+1);List<CalculationSnapshot.Override> audit=new ArrayList<>();
             if(prior!=null){Set<String> keys=new LinkedHashSet<>(prior.inputSnapshot.keySet());keys.addAll(inputs.keySet());for(String key:keys){String old=prior.inputSnapshot.getOrDefault(key,""),n=inputs.getOrDefault(key,"");if(!old.equals(n))audit.add(new CalculationSnapshot.Override(CalculationSnapshot.OverrideType.INPUT,key,old,n,now,CalculationReference.required(reason.getText().toString(),"علت تغییر")));}}
             show(new CalculationSnapshot(UUID.randomUUID().toString(),prior==null?"":prior.id,title.getText().toString(),caseId,arsh?CalculationSnapshot.Type.ARSH_ESTIMATE:CalculationSnapshot.Type.DIYAH,
-                prescribed?CalculationPrescribedBody.ENGINE_VERSION:CalculationBodyMath.ENGINE_VERSION,prescribed?prescribedRules.version:"assessed-input-conversion/1",data,JalaliDate.today().value(),date,inputs,results,refs,steps,warnings,audit,RoundingMode.HALF_UP,now,now),false);
+                prescribed?CalculationPrescribedBody.ENGINE_VERSION:CalculationBodyMath.ENGINE_VERSION,prescribed?prescribedRules.version:independent?"assessed-independent-awards/1":"assessed-input-conversion/1",data,JalaliDate.today().value(),date,inputs,results,refs,steps,warnings,audit,RoundingMode.HALF_UP,now,now),false);
         }catch(Exception e){a.toast(message(e));}});
     }
 

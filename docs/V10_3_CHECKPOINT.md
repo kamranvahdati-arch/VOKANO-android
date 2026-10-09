@@ -547,3 +547,16 @@ are pending publication/CI. Previous permanent-signed candidate is older than
 this source and is not a final release. Next: verify changed CI, continue
 remaining special tariff intersections and wider injury/combination coverage,
 then sign final tree with the original key and validate installed upgrade.
+
+### Independent assessed injury totals
+
+Added a separate path for summing2–50 percentages already independently awarded
+by the competent authority. It requires a documented non-overlap determination,
+item-specific source and distinct description; it does not diagnose injuries or
+resolve articles538–548 automatically. Reopened historical primary Majlis print
+via ILO103202, pages73–74. Exact amounts are summed before a single rounding;
+independent awards may exceed one full diyah. Invalid rows, repeated descriptions,
+missing findings, missing years and invalid percentages fail closed. Inputs,
+sources, warning, exact total and revisions use existing immutable persistence.
+Body34, prescribed15 and death93 checks PASS locally. Android finding/revision/
+backup test added; changed-tree Android CI pending. No schema or signing change.
