@@ -45,11 +45,11 @@ if os.environ.get('VOKANO_VALIDATION_MODE')=='clean':
  adb('install',str(candidate));adb('install',str(instrumentation))
  installed=adb('shell','dumpsys','package',PACKAGE);(out/'clean-package.txt').write_text(installed)
  assert 'versionCode=16 ' in installed and 'versionName=10.3' in installed
- test('ProductionBaselineTest',production_mode='seed')
- # ProductionBaselineTest asserts every exported table is empty before seeding
- # synthetic backup fixtures, checks no demo records and exercises complete backup.
+ test('ProductionBaselineTest',production_mode='clean')
+ # Verify current workspace-backed metadata backups with the matching fixture.
+ test('WorkspaceProviderTest')
  (out/'provenance.json').write_text(json.dumps(manifest,indent=2))
- print('Permanent-signed 10.3 fresh install and empty-database/full-backup checks PASS',flush=True)
+ print('Permanent-signed 10.3 fresh install, empty database and workspace/light-backup checks PASS',flush=True)
  raise SystemExit(0)
 # Fresh emulator installs the original production APK. No app-data clearing or uninstall.
 adb('install',str(baseline));adb('install',str(instrumentation))
