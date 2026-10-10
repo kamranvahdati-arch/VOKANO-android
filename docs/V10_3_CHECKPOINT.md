@@ -643,3 +643,28 @@ CI validation of this changed tree is pending the authorized push.174 tariff
 checks passed, whitespace diff clean. No final APK was built or signed here.
 Next: approved push of this continuation branch to codex/v10.3, inspect changed
 Android CI, then continue remaining recorded scope and candidate signing/proof.
+
+
+## Verified publication and Android CI — 2026-10-10
+
+Owner explicitly authorized publication in the current conversation. Local git
+had no HTTPS credential; the connected GitHub API published the identical tree
+79afe6717257a7f777ef95fe1528ece54592bdbd as690868412e8a7578c96f1a4cb62eea721c14b125,
+fast-forward from721884e. This resolves the earlier publication gate; no force
+push, no credential export and no previous commit removal occurred.
+
+Run38037721344 SUCCESS: foundation114171554603, API30 114171554710,
+API35 114171554770. Foundation log confirms174 tariff assertions and successful
+release/test/preview builds. Both installed test-signed10.2→10.3 preservation
+and scoped regressions passed. CalculationUiTest:15 tests PASS on both APIs,
+including reversalTariffsSeparateCounselAndPreserveHistory. Source and stored
+results preserved; no migration change. These are TEST-SIGNED upgrade results,
+not new permanent-signing or permanent clean-install proof.
+
+Next implementation remains the previously recorded remaining tariff/injury
+coverage. For final candidate validation, incorporate the preserved clean-mode
+runner correction, build/sign matching instrumentation and app with the original
+key, verify certificates, then run clean/upgrade gates on that exact candidate.
+Earlier signed7401406 evidence must not be attributed to this newer app source.
+Final production-ready APK remains NOT completed. This entry is documentation
+only; do not repeat the successful tests for unchanged application content.
