@@ -15,10 +15,10 @@ import java.util.Properties;
  * Adoption date is metadata, NOT an inferred effective date.
  */
 final class CalculationTariff {
-    static final String ENGINE_VERSION = "tariff-math/5";
+    static final String ENGINE_VERSION = "tariff-math/6";
     enum Stage { WHOLE, FIRST, APPEAL, CIVIL_CASSATION, PROSECUTOR }
     enum Disposition { ORDINARY, ANNUL_BEFORE_DEFENSE, REJECT_AFTER_DEFENSE, APPEAL_DROP_BEFORE_DEFENSE, APPEAL_DROP_AFTER_DEFENSE, NONHEARING_OR_RETRIAL_REFUSAL }
-    enum Special { NONE, SETTLEMENT, EQUAL_COUNSEL, MULTIPLE_CHARGES, CERTIFIED_SPECIALTY, APPOINTED_AID }
+    enum Special { NONE, SETTLEMENT, EQUAL_COUNSEL, MULTIPLE_CHARGES, CERTIFIED_SPECIALTY, APPOINTED_AID, CONTINUED_AFTER_REVERSAL }
     enum Family { CIVIL, CRIMINAL, SERVICE }
 
     static final class Band {
@@ -54,6 +54,7 @@ final class CalculationTariff {
         final Map<String, Range> ranges;
         final CalculationArithmetic.Fraction civilFirst, civilAppeal, financialFinal;
         final String finalOpinionUrl, finalOpinionNumber;
+        final CalculationArithmetic.Fraction replacementRate;
         final Long enforcementMinimum;
         final CalculationArithmetic.Fraction enforcementMaximumRate;
         final CalculationArithmetic.Fraction criminalProsecutor, criminalFirst, criminalAppeal;
@@ -101,6 +102,8 @@ final class CalculationTariff {
                 sf.put(special,factor);
             }
             specialFactors=Collections.unmodifiableMap(sf);
+            replacementRate=p.containsKey("replacement.percent")?percent(p,"replacement.percent"):null;
+            if(replacementRate!=null&&replacementRate.numerator.signum()<=0)throw invalid("ضریب وکیل پس از نقض باید مثبت باشد");
             financialFinal=p.containsKey("financial.final.percent")?percent(p,"financial.final.percent"):null;
             finalOpinionUrl=financialFinal==null?"":required(p,"financial.final.opinion.url");
             finalOpinionNumber=financialFinal==null?"":required(p,"financial.final.opinion.number");
@@ -319,6 +322,11 @@ final class CalculationTariff {
                 }
                 if(!matches)throw invalid("مبنای وکالت تسخیری یا معاضدتی باید حداقل تعرفه همان مرحله باشد");
                 article="8";break;
+            case CONTINUED_AFTER_REVERSAL:
+                if(count!=1||range==null||range.family!=Family.CRIMINAL||
+                        (base.stage!=Stage.FIRST&&base.stage!=Stage.APPEAL))
+                    throw invalid("ادامه وکالت پس از نقض نیازمند دسته کیفری و مرحله بدوی یا تجدیدنظر است");
+                article="14-note2";break;
             case CERTIFIED_SPECIALTY:
                 if(count!=1)throw invalid("در تخصص تعداد باید یک باشد");
                 factor=CalculationArithmetic.Fraction.of(1,1).add(factor);
@@ -330,7 +338,24 @@ final class CalculationTariff {
         steps.add("مبلغ دقیق مبنا "+base.exactAmount+" × "+factor+"؛ گرد کردن فقط در پایان");
         if(special==Special.EQUAL_COUNSEL)steps.add("نتیجه سهم هر وکیل است؛ بدون قرارداد حق‌الوکاله و بدون توافق متفاوت در تقسیم. کسر دقیق، مبنای تقسیم است؛ جمع ارقام گرد‌شده ممکن است اختلاف جزئی داشته باشد.");
         if(special==Special.MULTIPLE_CHARGES)steps.add("مبلغ مبنا تعرفه جرم اشد؛ افزایش برای هر اتهام اضافه نسبت به همان مبنا و غیرمرکب است.");
+        if(special==Special.CONTINUED_AFTER_REVERSAL)steps.add("فقط حق‌الوکاله مرحله جدید پس از قبول فرجام یا اعاده دادرسی، نقض رأی و اعاده پرونده؛ حق‌الوکاله سابق به این نتیجه اضافه نشده و این مسیر وکیل جدید ماده ۱۸ نیست.");
         return new Result(rules,base.article+"/"+article,base.stage,base.exactAmount.multiply(factor),base.selectedBasis,steps,base.rounding);
+    }
+
+    /** Explicitly documented article-18 base, not an inferred contract or whole-case fee. */
+    static Result replacementAfterReversal(Rules rules, long priorTariff, Stage stage,
+            String basis, String evidence, RoundingMode rounding) {
+        if(rules==null||rules.replacementRate==null)throw invalid("بسته تاریخی فاقد قاعده ماده ۱۸ است");
+        if(priorTariff<=0||rounding==null)throw invalid("حق‌الوکاله مستند پیش از نقض باید مثبت باشد");
+        if(stage!=Stage.FIRST&&stage!=Stage.APPEAL)throw invalid("مرحله رسیدگی پس از نقض را بدوی یا تجدیدنظر انتخاب کنید");
+        String explanation=CalculationReference.required(basis,"مبنای تعیین حق‌الوکاله پیش از نقض");
+        String proof=CalculationReference.required(evidence,"مستند نقض رأی و قبول وکالت توسط وکیل جدید");
+        List<String> steps=new ArrayList<>();
+        steps.add("ماده ۱۸؛ حق‌الوکاله تعرفه‌ای مستند پیش از نقض: "+priorTariff+" ریال؛ "+explanation);
+        steps.add("مستند نقض و وکیل جدید: "+proof);
+        steps.add("مبلغ پیش از نقض × "+rules.replacementRate+"؛ بدون تقسیم دوباره سهم مرحله؛ گرد کردن فقط در پایان");
+        steps.add("فقط حق‌الوکاله وکیل جدید؛ مبلغ قرارداد قبلی یا جمع کل مراحل، خودکار مبنا نیست. با تبصره ۲ ماده ۱۴ جمع نشده است.");
+        return new Result(rules,"18",stage,CalculationArithmetic.Fraction.of(priorTariff,1).multiply(rules.replacementRate),explanation,steps,rounding);
     }
 
     static long agreedFee(String amount, CalculationArithmetic.Currency currency) {

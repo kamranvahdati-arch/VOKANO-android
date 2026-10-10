@@ -308,6 +308,42 @@ public class CalculationUiTest {
         }catch(Exception e){throw new AssertionError(e);}});ins.waitForIdleSync();}
         finally{ins.runOnMainSync(()->{try{if(original[0]!=null)a.db.importJson(original[0]);}catch(Exception e){throw new AssertionError(e);}finally{a.finish();}});ins.waitForIdleSync();}
     }
+    @Test public void reversalTariffsSeparateCounselAndPreserveHistory()throws Exception{
+        Instrumentation ins=InstrumentationRegistry.getInstrumentation();Context c=ins.getTargetContext();
+        MainActivity a=(MainActivity)ins.startActivitySync(new Intent(c,MainActivity.class).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK|Intent.FLAG_ACTIVITY_CLEAR_TASK));ins.waitForIdleSync();final String[] original={null};
+        try{ins.runOnMainSync(()->{try{
+            original[0]=a.db.exportJson();OfficeCalculations repo=new OfficeCalculations(a.db);CalculationUi ui=new CalculationUi(a);ui.fee(true,null);
+            selectItem(a.page,"وکیل جدید پس از نقض رأی؛ ماده ۱۸");selectItem(a.page,"بدوی");selectItem(a.page,"تومان");
+            input(a.page,"بهای خواسته مالی یا مبلغ منتخب کل تعرفه در سایر دسته‌ها").setText("2400000");
+            input(a.page,"توضیح مستند انتخاب مبلغ و مبنا").setText("documented pre-reversal tariff for the reversed stage");
+            ((CheckBox)findText(a.page,"انطباق این دسته و نسخه تعرفه را بررسی کرده‌ام؛ این محاسبه فاقد عوامل ویژه پشتیبانی‌نشده است")).setChecked(true);
+            click(a.page,"محاسبه و نمایش نتیجه");assertNull(findText(a.page,"ذخیره محاسبه"));
+            input(a.page,"مستند شرایط حالت ویژه").setText("reversal decision and appointment of replacement counsel");
+            click(a.page,"محاسبه و نمایش نتیجه");click(a.page,"ذخیره محاسبه");
+            CalculationSnapshot first=repo.list(null).get(0);assertEquals("12,000,000 ریال",first.resultSnapshot.get("مبلغ"));
+            assertEquals("REPLACEMENT_AFTER_REVERSAL",first.inputSnapshot.get("category"));
+            click(a.page,"نسخه جدید / محاسبه مجدد");
+            input(a.page,"بهای خواسته مالی یا مبلغ منتخب کل تعرفه در سایر دسته‌ها").setText("3000000");
+            input(a.page,"علت تغییر نسبت به نسخه قبلی").setText("corrected documented prior tariff");
+            ((CheckBox)findText(a.page,"انطباق این دسته و نسخه تعرفه را بررسی کرده‌ام؛ این محاسبه فاقد عوامل ویژه پشتیبانی‌نشده است")).setChecked(true);
+            click(a.page,"محاسبه و نمایش نتیجه");click(a.page,"ذخیره محاسبه");
+            CalculationSnapshot next=repo.list(null).get(0);assertEquals(first.id,next.previousSnapshotId);assertEquals("15,000,000 ریال",next.resultSnapshot.get("مبلغ"));
+            ui.fee(true,null);selectItem(a.page,"کیفری دو؛ تعزیر درجه شش");selectItem(a.page,"بدوی");
+            selectItem(a.page,"ادامه وکالت کیفری پس از نقض؛ تبصره ۲ ماده ۱۴");
+            input(a.page,"بهای خواسته مالی یا مبلغ منتخب کل تعرفه در سایر دسته‌ها").setText("10000000");
+            input(a.page,"توضیح مستند انتخاب مبلغ و مبنا").setText("selected whole criminal fee, trial after remand");
+            input(a.page,"مستند شرایط حالت ویژه").setText("accepted cassation, reversal, remand and same counsel representation");
+            ((CheckBox)findText(a.page,"انطباق این دسته و نسخه تعرفه را بررسی کرده‌ام؛ این محاسبه فاقد عوامل ویژه پشتیبانی‌نشده است")).setChecked(true);
+            click(a.page,"محاسبه و نمایش نتیجه");click(a.page,"ذخیره محاسبه");
+            CalculationSnapshot continued=repo.list(null).get(0);assertEquals("3,000,000 ریال",continued.resultSnapshot.get("مبلغ"));
+            assertEquals("CONTINUED_AFTER_REVERSAL",continued.inputSnapshot.get("tariffSpecial"));
+            a.db.importJson(a.db.exportJson());
+            assertEquals("12,000,000 ریال",repo.get(first.id).resultSnapshot.get("مبلغ"));
+            assertEquals("15,000,000 ریال",repo.get(next.id).resultSnapshot.get("مبلغ"));
+            assertTrue(repo.get(continued.id).inputSnapshot.get("_rulePackSnapshot").contains("replacement.percent=50"));
+        }catch(Exception e){throw new AssertionError(e);}});ins.waitForIdleSync();}
+        finally{ins.runOnMainSync(()->{try{if(original[0]!=null)a.db.importJson(original[0]);}catch(Exception e){throw new AssertionError(e);}finally{a.finish();}});ins.waitForIdleSync();}
+    }
     @Test public void finalByValueAndAppointedTariffsKeepIndependentHistory()throws Exception{
         Instrumentation ins=InstrumentationRegistry.getInstrumentation();Context c=ins.getTargetContext();
         MainActivity a=(MainActivity)ins.startActivitySync(new Intent(c,MainActivity.class).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK|Intent.FLAG_ACTIVITY_CLEAR_TASK));ins.waitForIdleSync();final String[] original={null};

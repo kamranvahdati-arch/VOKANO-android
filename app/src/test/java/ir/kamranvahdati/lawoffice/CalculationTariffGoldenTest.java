@@ -184,6 +184,29 @@ public final class CalculationTariffGoldenTest {
         check(CalculationTariff.disposition(r,appealStage,"FINANCIAL",CalculationTariff.Disposition.NONHEARING_OR_RETRIAL_REFUSAL).rials==16000000);
         rejects(()->CalculationTariff.disposition(r,whole,"FINANCIAL",CalculationTariff.Disposition.NONHEARING_OR_RETRIAL_REFUSAL));
         rejects(()->CalculationTariff.disposition(v4,financial(v4,500000000,CalculationTariff.Stage.FIRST),"FINANCIAL",CalculationTariff.Disposition.NONHEARING_OR_RETRIAL_REFUSAL));
+        // Article 18: use the documented pre-reversal tariff once, not a new stage share.
+        CalculationTariff.Result replacement=CalculationTariff.replacementAfterReversal(r,24000000,CalculationTariff.Stage.FIRST,BASIS,"new counsel/reversal record",ROUND);
+        check(replacement.rials==12000000&&replacement.article.equals("18"));
+        check(CalculationTariff.replacementAfterReversal(r,15,CalculationTariff.Stage.APPEAL,BASIS,"record",ROUND).exactRials.equals("15/2"));
+        check(CalculationTariff.replacementAfterReversal(r,15,CalculationTariff.Stage.APPEAL,BASIS,"record",ROUND).rials==8);
+        check(CalculationTariff.replacementAfterReversal(r,Long.MAX_VALUE,CalculationTariff.Stage.FIRST,BASIS,"record",ROUND).rials==4611686018427387904L);
+        for(CalculationTariff.Stage invalidStage:new CalculationTariff.Stage[]{CalculationTariff.Stage.WHOLE,CalculationTariff.Stage.PROSECUTOR,CalculationTariff.Stage.CIVIL_CASSATION})
+            rejects(()->CalculationTariff.replacementAfterReversal(r,1,invalidStage,BASIS,"record",ROUND));
+        rejects(()->CalculationTariff.replacementAfterReversal(r,0,CalculationTariff.Stage.FIRST,BASIS,"record",ROUND));
+        rejects(()->CalculationTariff.replacementAfterReversal(r,-1,CalculationTariff.Stage.FIRST,BASIS,"record",ROUND));
+        rejects(()->CalculationTariff.replacementAfterReversal(r,1,CalculationTariff.Stage.FIRST,"","record",ROUND));
+        rejects(()->CalculationTariff.replacementAfterReversal(r,1,CalculationTariff.Stage.FIRST,BASIS,"",ROUND));
+        CalculationTariff.Rules v5=new CalculationTariff.Rules(Files.newBufferedReader(Paths.get("app/src/main/assets/calculation/tariff-1398-reviewed-v5.properties"),StandardCharsets.UTF_8));
+        rejects(()->CalculationTariff.replacementAfterReversal(v5,24000000,CalculationTariff.Stage.FIRST,BASIS,"record",ROUND));
+        rejects(()->CalculationTariff.special(r,replacement,"REPLACEMENT_AFTER_REVERSAL",CalculationTariff.Special.CONTINUED_AFTER_REVERSAL,1,"record",CalculationTariff.Disposition.ORDINARY));
+        rejects(()->CalculationTariff.disposition(r,replacement,"REPLACEMENT_AFTER_REVERSAL",CalculationTariff.Disposition.NONHEARING_OR_RETRIAL_REFUSAL));
+        // 10m selected criminal whole fee: resumed trial alone is 30%=3m; no old fee added.
+        check(CalculationTariff.special(r,criminal,"CRIMINAL_TWO_GRADE6",CalculationTariff.Special.CONTINUED_AFTER_REVERSAL,1,"accepted cassation/reversal/remand; same counsel",CalculationTariff.Disposition.ORDINARY).rials==3000000);
+        rejects(()->CalculationTariff.special(r,whole,"FINANCIAL",CalculationTariff.Special.CONTINUED_AFTER_REVERSAL,1,"record",CalculationTariff.Disposition.ORDINARY));
+        rejects(()->CalculationTariff.special(r,range(r,"CRIMINAL_TWO_GRADE6",10000000,"1",CalculationTariff.Stage.WHOLE,true,false),"CRIMINAL_TWO_GRADE6",CalculationTariff.Special.CONTINUED_AFTER_REVERSAL,1,"record",CalculationTariff.Disposition.ORDINARY));
+        rejects(()->CalculationTariff.special(r,criminal,"CRIMINAL_TWO_GRADE6",CalculationTariff.Special.CONTINUED_AFTER_REVERSAL,2,"record",CalculationTariff.Disposition.ORDINARY));
+        rejects(()->CalculationTariff.special(r,criminal,"CRIMINAL_TWO_GRADE6",CalculationTariff.Special.CONTINUED_AFTER_REVERSAL,1,"",CalculationTariff.Disposition.ORDINARY));
+        rejects(()->CalculationTariff.special(v5,range(v5,"CRIMINAL_TWO_GRADE6",10000000,"1",CalculationTariff.Stage.FIRST,true,false),"CRIMINAL_TWO_GRADE6",CalculationTariff.Special.CONTINUED_AFTER_REVERSAL,1,"record",CalculationTariff.Disposition.ORDINARY));
         System.out.println("CalculationTariffGoldenTest: " + assertions + " assertions passed (limited tariff coverage)");
     }
 }

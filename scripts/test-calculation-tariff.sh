@@ -10,4 +10,4 @@ source_dir=app/src/main/java/ir/kamranvahdati/lawoffice
   "$source_dir/CalculationReference.java" "$source_dir/CalculationTariff.java" \
   app/src/test/java/ir/kamranvahdati/lawoffice/CalculationTariffGoldenTest.java
 "$java_runtime" -cp "$test_classes" ir.kamranvahdati.lawoffice.CalculationTariffGoldenTest \
-  app/src/main/assets/calculation/tariff-1398-reviewed-v5.properties
+  app/src/main/assets/calculation/tariff-1398-reviewed-v6.properties

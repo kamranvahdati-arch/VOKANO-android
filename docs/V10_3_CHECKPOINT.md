@@ -603,3 +603,43 @@ kept distinct from article14 note2 continued representation; preserve every
 existing rule pack and verify its source interaction before enabling the path.
 Any changed app tree requires a new signed candidate and corresponding proof;
 never attribute the signed7401406 proof to later application changes.
+
+## Resume 2026-10-10 — reversal tariff paths
+
+Verified remote codex/v10.3 HEAD721884eadf8d6b46094909a15c002ec926045dbe.
+CI37961927802 SUCCESS. Old local worktree has an uncommitted production-test
+runner correction; preserved untouched in ../vokano. Fresh continuation worktree
+starts at the verified remote HEAD. No reset or migration change.
+
+Implemented separate article18 documented pre-reversal fee/new counsel and
+article14 note2 continued criminal representation/new-stage fee pathways.
+New immutable tariff v6, exact fractions, required evidence, restricted stages,
+no automatic stacking, existing snapshot/revision storage reused.
+174 local tariff assertions PASS. Added Android rejection, currency conversion,
+independent result, revision and backup round-trip coverage; changed Android
+build and instrumentation tests PENDING CI. Version10.3/code16/schema16 unchanged.
+
+Correction to prior spoken progress: successful permanent clean-install rerun
+was NOT found. Last recorded dedicated run37961150107 failed on old full-media
+fixture; only development CI after fixture correction is green. The uncommitted
+runner correction and newly built/signed instrumentation are still required.
+Signed7401406 candidate and its successful upgrade proof remain valid only for
+that older application tree. New application source requires fresh signing/proof.
+Remaining scope: other tariff intersections, wider prescribed injury/qualified
+overlap, then final signed candidate, clean/upgrade proof and release assessment.
+
+### Execution gate at this checkpoint
+
+Implementation saved locally as3611cfe881fbfdb959066c68fd8730261afa01e1.
+Git push to the existing origin/codex/v10.3 was rejected by automatic approval
+review. A targeted personal-context retrieval recovered the owner's exact
+prior consent for this destination; retry was also rejected because the reviewer
+does not accept retrieved assistant/tool context as trusted user authorization.
+Do NOT route around this rejection via GitHub write APIs or another transport.
+Ask the owner to authorize this concrete push in the current conversation.
+Remote last verified HEAD remains721884e; local source is NOT claimed uploaded.
+Android SDK/build tooling was not found in the current inspected environment;
+CI validation of this changed tree is pending the authorized push.174 tariff
+checks passed, whitespace diff clean. No final APK was built or signed here.
+Next: approved push of this continuation branch to codex/v10.3, inspect changed
+Android CI, then continue remaining recorded scope and candidate signing/proof.

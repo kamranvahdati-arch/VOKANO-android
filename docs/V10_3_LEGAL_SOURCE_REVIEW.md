@@ -406,3 +406,23 @@ Article8 hand golden:family minimum5m * .6 *2 =6m at first instance;
 appeal4m. Article12(c) preserves the judgment fee of the selected stage.
 The engine does not resolve unsupported intersections, infer legal-aid status,
 or manufacture a statutory minimum for maximum-only categories.
+
+## Resumed reversal tariff paths — 2026-10-10
+
+Rechecked article18 and article14 note2 against the seven-page published
+regulation and its scanned counterpart (pages4–5):
+https://vokalapress.ir/wp-content/uploads/2020/03/آیین-نامه-تعرفه-1398.pdf
+https://www.ekhtebar.ir/wp-content/uploads/2020/03/تعرفه-حق-الوکاله-مصوب-1398-1.pdf
+Official Qavanin URL remains the original source register; direct reopening
+this session timed out. This is a historical-text cross-check, not certification
+of all later amendments or an advisory holding resolving every interaction.
+
+Article18 path requires the documented pre-reversal tariff and replacement
+counsel/reversal evidence. It halves that input exactly once, without another
+stage split. It does not infer that a former contractual fee or whole-case total
+is the correct legal base. Continued criminal representation under article14
+note2 is separate: accepted cassation/retrial, reversal, remand and continued
+representation must be documented. Its result is ONLY the new-stage fee;
+it does not double an earlier total. Neither path combines with the other,
+special multipliers or article12 orders. Unsupported stages remain blocked.
+Rule pack v6 is new; v1–v5 and stored snapshots remain unchanged.
